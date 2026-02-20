@@ -1,0 +1,55 @@
+.settings-panel {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 2px 10px var(--shadow-color);
+
+    h3 {
+        margin-top: 0;
+        color: var(--text-primary);
+    }
+
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid var(--border-color);
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        label {
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+
+            &:hover {
+                background: var(--bg-secondary);
+            }
+        }
+
+        .danger-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+
+            &:hover {
+                background: #d32f2f;
+            }
+        }
+    }
+}

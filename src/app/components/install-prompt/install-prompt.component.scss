@@ -1,0 +1,35 @@
+.install-prompt {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    background: #4CAF50;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    animation: slideUp 0.3s;
+
+    button {
+        background: white;
+        color: #4CAF50;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        margin-left: 10px;
+        cursor: pointer;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}

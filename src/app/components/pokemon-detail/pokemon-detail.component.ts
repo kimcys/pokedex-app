@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/
 import { EvolutionChain, Pokemon } from '../../models/pokemon.model';
 import { PokemonService } from '../../services/pokemon.service';
 import { CommonModule } from '@angular/common';
+import { SoundService } from '../../services/sound.service';
 
 @Component({
   selector: 'app-pokemon-detail',
@@ -13,14 +14,17 @@ export class PokemonDetailComponent {
 
   @Input() pokemonName!: string;
   @Input() pokemonId!: number;
-  
+
   pokemon?: Pokemon;
   evolutionChain?: EvolutionChain[];
   isLoading = true;
   @Output() pokemonChange = new EventEmitter<string>();
   activeTab: 'about' | 'stats' | 'evolution' = 'about';
-  
-  constructor(private pokemonService: PokemonService) { }
+
+  constructor(
+    private pokemonService: PokemonService,
+    private soundService: SoundService
+  ) { }
 
   ngOnInit(): void {
     this.loadPokemonDetails();
@@ -34,8 +38,8 @@ export class PokemonDetailComponent {
 
   loadPokemonDetails(): void {
     this.isLoading = true;
-    
-    const request = this.pokemonName 
+
+    const request = this.pokemonName
       ? this.pokemonService.getPokemonDetails(this.pokemonName)
       : this.pokemonService.getPokemonById(this.pokemonId);
 
@@ -58,7 +62,7 @@ export class PokemonDetailComponent {
       return;
     }
     console.log('Loading evolution chain from:', this.pokemon.species.url); // Debug log
-    
+
     this.pokemonService.getEvolutionChain(this.pokemon.species.url).subscribe({
       next: (response) => {
         console.log('Evolution chain response:', response); // Debug log
@@ -74,7 +78,7 @@ export class PokemonDetailComponent {
 
   parseEvolutionChain(chainData: any): EvolutionChain[] {
     const evolutionChain: EvolutionChain[] = [];
-    
+
     const parseChain = (chain: any, level: number = 1) => {
       if (chain && chain.species) {
         evolutionChain.push({
@@ -84,17 +88,17 @@ export class PokemonDetailComponent {
           minLevel: chain.evolution_details && chain.evolution_details[0]?.min_level || null,
           item: chain.evolution_details && chain.evolution_details[0]?.item?.name || null
         });
-          if (chain.evolves_to && chain.evolves_to.length > 0) {
+        if (chain.evolves_to && chain.evolves_to.length > 0) {
           chain.evolves_to.forEach((evolution: any) => {
             parseChain(evolution, level + 1);
           });
         }
       }
     };
-      if (chainData && chainData.chain) {
+    if (chainData && chainData.chain) {
       parseChain(chainData.chain);
     }
-    
+
     return evolutionChain;
   }
 

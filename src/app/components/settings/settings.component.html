@@ -1,0 +1,28 @@
+<div class="settings-panel">
+    <h3>Settings</h3>
+
+    <div class="setting-item">
+        <label>Dark Mode</label>
+        <button (click)="toggleDarkMode()" class="toggle-btn">
+            {{ (darkMode$ | async) ? '🌙' : '☀️' }}
+        </button>
+    </div>
+
+    <div class="setting-item">
+        <label>Sound Effects</label>
+        <button (click)="toggleSound()" class="toggle-btn">
+          {{ soundEnabled ? '🔊' : '🔇' }}
+        </button>
+      </div>
+
+    <div class="setting-item">
+        <label>Cache Size</label>
+        <span>{{ getCacheSize() }} items</span>
+        <button (click)="clearCache()" class="danger-btn">Clear Cache</button>
+    </div>
+
+    <div class="setting-item">
+        <label>Favorites</label>
+        <span>{{ getFavoritesCount() }} saved</span>
+    </div>
+</div>

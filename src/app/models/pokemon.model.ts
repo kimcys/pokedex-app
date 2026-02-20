@@ -1,3 +1,14 @@
+export interface NamedAPIResource {
+    name: string;
+    url: string;
+}
+
+export interface NamedAPIResourceList<T = NamedAPIResource> {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
+}
 export interface PokemonListItem {
     name: string;
     url: string;
@@ -13,30 +24,66 @@ export interface Pokemon {
         other: {
             'official-artwork': {
                 front_default: string;
-            }
-        }
+            };
+        };
     };
     types: {
         slot: number;
-        type: {
-            name: string;
-        }
+        type: NamedAPIResource;
     }[];
     stats: {
         base_stat: number;
-        stat: {
-            name: string;
-        }
+        stat: NamedAPIResource;
     }[];
     abilities: {
-        ability: {
-            name: string;
-        }
+        ability: NamedAPIResource;
     }[];
-    species: {
-        name: string;
+    species: NamedAPIResource;
+}
+
+export type PokemonTypeListResponse = NamedAPIResourceList<NamedAPIResource>;
+
+export interface PokemonByTypeEntry {
+    slot: number;
+    pokemon: NamedAPIResource;
+}
+
+export interface PokemonTypeResponse {
+    id: number;
+    name: string;
+    pokemon: PokemonByTypeEntry[];
+}
+
+export interface PokemonSpeciesResponse {
+    id: number;
+    name: string;
+    evolution_chain: {
         url: string;
     };
+}
+
+export interface EvolutionDetail {
+    min_level?: number | null;
+    item?: NamedAPIResource | null;
+    trigger?: NamedAPIResource | null;
+    min_happiness?: number | null;
+    min_beauty?: number | null;
+    min_affection?: number | null;
+    time_of_day?: string;
+    known_move?: NamedAPIResource | null;
+    known_move_type?: NamedAPIResource | null;
+    location?: NamedAPIResource | null;
+}
+
+export interface EvolutionChainLink {
+    species: NamedAPIResource;
+    evolution_details: EvolutionDetail[];
+    evolves_to: EvolutionChainLink[];
+}
+
+export interface EvolutionChainResponse {
+    id: number;
+    chain: EvolutionChainLink;
 }
 
 export interface EvolutionChain {
@@ -45,28 +92,4 @@ export interface EvolutionChain {
     level: number;
     minLevel: number | null;
     item: string | null;
-}
-
-
-export interface EvolutionDetail {
-    min_level?: number;
-    item?: {
-        name: string;
-        url: string;
-    };
-    trigger?: {
-        name: string;
-        url: string;
-    };
-}
-
-export interface EvolutionChainResponse {
-    chain: {
-        species: {
-            name: string;
-            url: string;
-        };
-        evolves_to: any[];
-        evolution_details: EvolutionDetail[];
-    };
 }

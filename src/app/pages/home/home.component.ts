@@ -5,6 +5,7 @@ import { PokemonService } from '../../services/pokemon.service';
 import { CommonModule } from '@angular/common';
 import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
 import { Router } from '@angular/router';
+import { SoundService } from '../../services/sound.service';
 
 @Component({
   selector: 'app-home',
@@ -29,7 +30,8 @@ export class HomeComponent {
 
   constructor(
     private pokemonService: PokemonService,
-    private router: Router
+    private router: Router,
+    private soundService: SoundService  
   ) { }
 
   ngOnInit(): void {
@@ -44,6 +46,7 @@ export class HomeComponent {
   }
 
   onPokemonClick(pokemonName: string): void {
+    this.soundService.play('click');
     this.router.navigate(['/pokemon', pokemonName]);
   }
 

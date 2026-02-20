@@ -1,11 +1,29 @@
-<div class="pokemon-card" *ngIf="!isLoading && pokemon" (click)="viewDetails()">
-    <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
-    <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name">
-    <h3>{{ pokemon.name | titlecase }}</h3>
-    <div class="types">
-        <span *ngFor="let type of pokemon.types" [class]="'type-badge ' + getTypeClass(type.type.name)">
-            {{ type.type.name | titlecase }}
-        </span>
+<div class="pokemon-card" *ngIf="!isLoading && pokemon">
+    <!-- Compare Button (Left side) -->
+    <button class="action-btn compare-btn" 
+            [class.active]="isInCompare" 
+            (click)="toggleCompare($event)"
+            [disabled]="!canAddToCompare">
+        <span class="icon">🔄</span>
+        <span class="tooltip">{{ isInCompare ? 'Remove from compare' : 'Add to compare' }}</span>
+    </button>
+
+    <button class="action-btn favorite-btn" 
+            [class.active]="isFavorite" 
+            (click)="toggleFavorite($event)">
+        <span class="icon">{{ isFavorite ? '★' : '☆' }}</span>
+        <span class="tooltip">{{ isFavorite ? 'Remove from favorites' : 'Add to favorites' }}</span>
+    </button>
+
+    <div class="card-content" (click)="viewDetails()">
+        <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
+        <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name">
+        <h3>{{ pokemon.name | titlecase }}</h3>
+        <div class="types">
+            <span *ngFor="let type of pokemon.types" [class]="'type-badge ' + getTypeClass(type.type.name)">
+                {{ type.type.name | titlecase }}
+            </span>
+        </div>
     </div>
 </div>
 

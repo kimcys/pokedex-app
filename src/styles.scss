@@ -169,3 +169,39 @@
         transform: rotate(360deg);
     }
 }
+
+// Dark theme variables
+.dark-theme {
+    --bg-primary: #1a1a2e;
+    --bg-secondary: #16213e;
+    --text-primary: #e1e1e1;
+    --text-secondary: #b8b8b8;
+    --card-bg: #0f3460;
+    --border-color: #2a2a4a;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
+// Light theme variables (default)
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f5f5;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --card-bg: #ffffff;
+    --border-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+// Use variables throughout your app
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.pokemon-card {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 2px 10px var(--shadow-color);
+}

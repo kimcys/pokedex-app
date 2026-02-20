@@ -1,0 +1,104 @@
+<div class="compare-container" *ngIf="showCompare">
+    <div class="compare-header">
+        <h2>Compare Pokémon</h2>
+        <div class="header-actions">
+            <span class="compare-count">{{ compareList.length }} / 4 selected</span>
+            <button class="clear-btn" (click)="clearCompare()" *ngIf="compareList.length > 0">
+                Clear All
+            </button>
+            <button class="close-btn" (click)="showCompare = false">✕</button>
+        </div>
+    </div>
+
+    <div class="compare-content">
+        <!-- Comparison Grid -->
+        <div class="compare-grid" [class]="getGridClass()">
+            <!-- Pokemon Cards -->
+            <div class="compare-card" *ngFor="let pokemon of compareList">
+                <button class="remove-btn" (click)="removeFromCompare(pokemon.id, $event)">✕</button>
+
+                <div class="pokemon-info" (click)="viewPokemon(pokemon.name)">
+                    <div class="pokemon-header">
+                        <span class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</span>
+                        <h3>{{ pokemon.name | titlecase }}</h3>
+                    </div>
+
+                    <div class="pokemon-image">
+                        <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name">
+                    </div>
+
+                    <div class="pokemon-types">
+                        <span *ngFor="let type of pokemon.types" class="type-badge"
+                            [style.background]="getTypeColor(type.type.name)">
+                            {{ type.type.name | titlecase }}
+                        </span>
+                    </div>
+
+                    <!-- Stats Comparison -->
+                    <div class="stats-comparison">
+                        <div class="stat-row" *ngFor="let stat of selectedStats">
+                            <div class="stat-label">{{ formatStatName(stat) }}</div>
+                            <div class="stat-value">{{ getStatValue(pokemon, stat) }}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar"
+                                    [style.width.%]="getStatPercentage(getStatValue(pokemon, stat), getHighestStat(stat))"
+                                    [style.background]="getTypeColor(pokemon.types[0].type.name)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-row total">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">{{ getTotalStats(pokemon) }}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar" [style.width.%]="(getTotalStats(pokemon) / 800) * 100"
+                                    style="background: #4CAF50">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty Slots -->
+            <div class="empty-slot" *ngFor="let i of [].constructor(4 - compareList.length)">
+                <div class="empty-content">
+                    <span class="plus-icon">+</span>
+                    <p>Add Pokémon to compare</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Summary -->
+        <!-- Comparison Summary -->
+        <div class="comparison-summary" *ngIf="compareList.length >= 2">
+            <h3>Comparison Summary</h3>
+            <div class="summary-grid">
+                <div class="summary-item" *ngFor="let stat of selectedStats">
+                    <div class="summary-label">{{ formatStatName(stat) }}</div>
+
+                    <!-- Option 1: Proportional to total sum (fills entire width) -->
+                    <div class="summary-bars proportional">
+                        <div *ngFor="let pokemon of compareList" class="summary-bar" [style.width.%]="getSummaryBarWidth(
+                       getStatValue(pokemon, stat), 
+                       getTotalSumForStat(stat)
+                     )" [style.background]="getTypeColor(pokemon.types[0].type.name)" [style.minWidth.%]="3"
+                            [attr.data-pokemon]="pokemon.name" [attr.data-value]="getStatValue(pokemon, stat)">
+                            <span class="summary-value">{{ getStatValue(pokemon, stat) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Show the raw values below for clarity -->
+                    <div class="summary-values">
+                        <span *ngFor="let pokemon of compareList" class="value-tag"
+                            [style.background]="getTypeColor(pokemon.types[0].type.name)">
+                            {{ pokemon.name | slice:0:3 }}: {{ getStatValue(pokemon, stat) }}
+                        </span>
+                    </div>
+
+                    <div class="summary-average">Average: {{ getAverageStat(stat) }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
