@@ -1,0 +1,53 @@
+<div class="home-container">
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>Pokédex</h1>
+        <p>Search and discover your favorite Pokémon</p>
+    </section>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+        <div class="search-wrapper">
+            <input type="text" class="search-input" placeholder="Search Pokémon by name..." (input)="onSearch($event)">
+            <span class="search-icon">🔍</span>
+        </div>
+    </div>
+
+    <!-- Type Filters -->
+    <div class="filters-section">
+        <h3>Filter by Type:</h3>
+        <div class="type-filters">
+            <button *ngFor="let type of types" class="type-filter-btn" [class.active]="selectedType === type"
+                [style.background]="selectedType === type ? getTypeColor(type) : '#e0e0e0'"
+                (click)="filterByType(type)">
+                {{ type | titlecase }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+        <p>Showing {{ filteredPokemon.length }} of {{ totalCount }} Pokémon</p>
+    </div>
+
+    <!-- Pokemon Grid -->
+    <div class="pokemon-grid" *ngIf="!isLoading">
+        <app-pokemon-card *ngFor="let pokemon of filteredPokemon" [pokemonName]="pokemon.name"
+            (click)="onPokemonClick(pokemon.name)"></app-pokemon-card>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" *ngIf="isLoading">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Load More Button -->
+    <button *ngIf="filteredPokemon.length < totalCount && !isLoading" class="load-more-btn" (click)="loadMore()">
+        Load More Pokémon
+    </button>
+
+    <!-- No Results -->
+    <div class="no-results" *ngIf="!isLoading && filteredPokemon.length === 0">
+        <p>No Pokémon found. Try a different search term!</p>
+    </div>
+</div>

@@ -1,0 +1,110 @@
+<div class="pokemon-detail" *ngIf="!isLoading && pokemon">
+    <!-- Header with Pokemon info -->
+    <div class="detail-header" [style.background]="getTypeColor(pokemon.types[0].type.name)">
+        <div class="header-content">
+            <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
+            <h1 class="pokemon-name">{{ pokemon.name | titlecase }}</h1>
+            <div class="types">
+                <span *ngFor="let type of pokemon.types" class="type-badge"
+                    [style.background]="getTypeColor(type.type.name)">
+                    {{ type.type.name | titlecase }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pokemon Image -->
+    <div class="pokemon-image-container">
+        <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name" class="pokemon-image">
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+        <button class="tab-btn" [class.active]="activeTab === 'about'" (click)="changeTab('about')">
+            About
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'stats'" (click)="changeTab('stats')">
+            Base Stats
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'evolution'" (click)="changeTab('evolution')">
+            Evolution
+        </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+        <!-- About Tab -->
+        <div class="about-tab" *ngIf="activeTab === 'about'">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Height</span>
+                    <span class="info-value">{{ pokemon.height / 10 }} m</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Weight</span>
+                    <span class="info-value">{{ pokemon.weight / 10 }} kg</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Abilities</span>
+                    <span class="info-value">
+                        <span *ngFor="let ability of pokemon.abilities; let last = last">
+                            {{ ability.ability.name | titlecase }}{{ !last ? ', ' : '' }}
+                        </span>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Description (would need separate API call for flavor text) -->
+            <div class="description">
+                <h3>Description</h3>
+                <p>{{ pokemon.name | titlecase }} is a {{ pokemon.types[0].type.name }} type Pokémon.</p>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div class="stats-tab" *ngIf="activeTab === 'stats'">
+            <div class="stats-list">
+                <div class="stat-item" *ngFor="let stat of pokemon.stats">
+                    <div class="stat-label">{{ formatStatName(stat.stat.name) }}</div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar" [style.width]="getStatWidth(stat.base_stat)"
+                            [style.background]="getTypeColor(pokemon.types[0].type.name)">
+                            {{ stat.base_stat }}
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total</div>
+                    <div class="stat-value">{{ getTotalStats() }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Evolution Tab -->
+        <div class="evolution-tab" *ngIf="activeTab === 'evolution'">
+            <div class="evolution-chain" *ngIf="evolutionChain && evolutionChain.length > 0">
+                <div class="evolution-item" *ngFor="let evo of evolutionChain; let i = index">
+                    <div class="evolution-pokemon">
+                        <img [src]="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + getPokemonIdFromUrl(evo.url) + '.png'"
+                            [alt]="evo.name" (click)="onEvolutionClick(evo.name)">
+                        <span class="evolution-name">{{ evo.name | titlecase }}</span>
+                        <span class="evolution-condition" *ngIf="evo.minLevel">
+                            Level {{ evo.minLevel }}
+                        </span>
+                        <span class="evolution-condition" *ngIf="evo.item">
+                            Use {{ evo.item | titlecase }}
+                        </span>
+                    </div>
+                    <div class="evolution-arrow" *ngIf="i < evolutionChain.length - 1">→</div>
+                </div>
+            </div>
+            <div class="no-evolution" *ngIf="!evolutionChain || evolutionChain.length <= 1">
+                <p>This Pokémon does not evolve.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+</div>

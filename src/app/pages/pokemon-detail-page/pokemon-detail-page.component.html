@@ -1,0 +1,11 @@
+<div class="detail-page">
+  <button class="back-button" (click)="goBack()">
+    ← Back
+  </button>
+
+  <app-pokemon-detail 
+  [pokemonName]="pokemonName" 
+  [pokemonId]="pokemonId"
+  (pokemonChange)="onPokemonChange($event)">
+</app-pokemon-detail>
+</div>

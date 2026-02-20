@@ -1,0 +1,14 @@
+<div class="pokemon-card" *ngIf="!isLoading && pokemon" (click)="viewDetails()">
+    <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
+    <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name">
+    <h3>{{ pokemon.name | titlecase }}</h3>
+    <div class="types">
+        <span *ngFor="let type of pokemon.types" [class]="'type-badge ' + getTypeClass(type.type.name)">
+            {{ type.type.name | titlecase }}
+        </span>
+    </div>
+</div>
+
+<div class="loading-spinner" *ngIf="isLoading">
+    <div class="spinner"></div>
+</div>
