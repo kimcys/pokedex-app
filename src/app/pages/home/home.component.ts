@@ -19,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy, AfterViewChecked{
+export class HomeComponent implements OnInit, OnDestroy, AfterViewChecked {
   pokemonList: PokemonListItem[] = [];
   filteredPokemon: PokemonListItem[] = [];
   types: string[] = [];
@@ -55,6 +55,7 @@ export class HomeComponent implements OnInit, OnDestroy, AfterViewChecked{
     this.loadPokemon();
     this.loadTypes();
     this.setupSearch();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   ngOnDestroy(): void {

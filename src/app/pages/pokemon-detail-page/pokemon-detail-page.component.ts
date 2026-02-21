@@ -29,6 +29,7 @@ export class PokemonDetailPageComponent {
         this.pokemonId = +params['id'];
       }
     });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   goBack(): void {
