@@ -8,6 +8,10 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { CompareComponent } from './components/compare/compare.component';
 import { FavouritesComponent } from './components/favourites/favourites.component';
 import { SoundService } from './services/sound.service';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +21,11 @@ import { SoundService } from './services/sound.service';
     SettingsComponent,
     CompareComponent,
     FavouritesComponent,
-    RouterModule
+    RouterModule,
+    MatIconModule,
+    MatButtonModule,
+    MatBadgeModule,
+    MatTooltipModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
@@ -43,8 +51,6 @@ export class AppComponent {
     );
   }
 
-  ngOnInit(): void {}
-
   toggleSettings(): void {
     this.showSettings = !this.showSettings;
   }
@@ -61,9 +67,9 @@ export class AppComponent {
     this.showCompare = false;
   }
 
-toggleFavorites(): void {
-  this.showFavorites = !this.showFavorites;
-}
+  toggleFavorites(): void {
+    this.showFavorites = !this.showFavorites;
+  }
 
   closeFavorites(): void {
     this.showFavorites = false;
