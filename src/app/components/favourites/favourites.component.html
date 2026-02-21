@@ -1,82 +1,101 @@
-<div class="favorites-container" *ngIf="showPanel && favorites.length > 0">
-    <div class="favorites-header">
-        <h2>
-            <span class="header-icon">⭐</span>
+<div class="fixed bottom-0 left-0 right-0 md:left-5 md:right-5 md:bottom-5 z-50 max-h-[80vh] overflow-y-auto 
+            bg-card rounded-t-2xl md:rounded-2xl shadow-2xl animate-slideUp" *ngIf="showPanel && favorites.length > 0"
+    [style.background-color]="'var(--bg-card)'">
+    <div class="sticky top-0 z-10 p-5 bg-gradient-to-r from-yellow-500 to-amber-500 flex justify-between items-center">
+        <h2 class="text-white text-xl font-semibold m-0 flex items-center gap-2">
+            <span class="text-2xl">⭐</span>
             Favorite Pokémon
         </h2>
-        <div class="header-actions">
-            <span class="favorites-count">{{ favorites.length }} saved</span>
-            <button class="clear-btn" (click)="clearAll()" *ngIf="favorites.length > 0">
+        <div class="flex items-center gap-4">
+            <span class="text-white/90 text-sm">{{ favorites.length }} saved</span>
+
+            <button *ngIf="favorites.length > 0" class="px-4 py-1.5 rounded-full bg-white/20 text-white text-sm 
+                           hover:bg-white/30 transition-colors" (click)="clearAll()">
                 Clear All
             </button>
-            <button class="close-btn" (click)="closeFavorites()">✕</button>
+
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-xl
+                           hover:bg-white/20 transition-colors text-white" (click)="closeFavorites()">
+                ✕
+            </button>
         </div>
     </div>
-
-    <div class="favorites-content">
-        <!-- Favorites Grid -->
-        <div class="favorites-grid" [class]="getGridClass()">
-            <!-- Favorite Cards -->
-            <div class="favorite-card" *ngFor="let pokemon of favorites" (click)="viewPokemon(pokemon.name)">
-                <button class="remove-btn" (click)="removeFavorite(pokemon.id, $event)">✕</button>
-                
-                <div class="pokemon-info">
-                    <div class="pokemon-header">
-                        <span class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</span>
-                        <h3>{{ pokemon.name | titlecase }}</h3>
+    <div class="p-5">
+        <div class="grid gap-4 mb-4" [class.grid-cols-1]="favorites.length === 1"
+            [class.grid-cols-2]="favorites.length === 2" [class.grid-cols-3]="favorites.length === 3"
+            [class.grid-cols-4]="favorites.length >= 4">
+            <div *ngFor="let pokemon of favorites; let i = index" class="bg-secondary border border-color rounded-xl p-4 relative 
+                        transition-all duration-300 hover:-translate-y-1 hover:shadow-lg group
+                        animate-slideIn" [style.animation-delay]="i * 0.1 + 's'"
+                [style.background-color]="'var(--bg-secondary)'" [style.border-color]="'var(--border-color)'"
+                (click)="viewPokemon(pokemon.name)">
+                <button class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white 
+                               flex items-center justify-center text-sm z-10
+                               hover:bg-red-600 transition-all duration-200 
+                               transform hover:scale-110 active:scale-90 shadow-md
+                               opacity-0 group-hover:opacity-100" (click)="removeFavorite(pokemon.id, $event)">
+                    ✕
+                </button>
+                <div class="text-center">
+                    <div class="mb-3">
+                        <span class="text-secondary text-xs">#{{ pokemon.id.toString().padStart(3, '0') }}</span>
+                        <h3 class="text-primary font-semibold text-base mt-1 capitalize">{{ pokemon.name }}</h3>
                     </div>
-
-                    <div class="pokemon-image">
-                        <img [src]="pokemon.image" [alt]="pokemon.name">
+                    <div class="flex justify-center mb-3">
+                        <img [src]="pokemon.image" [alt]="pokemon.name"
+                            class="w-24 h-24 object-contain transition-transform duration-300 group-hover:scale-110">
                     </div>
-
-                    <div class="pokemon-types">
-                        <span *ngFor="let type of pokemon.types" 
-                              class="type-badge"
-                              [style.background]="getTypeColor(type)">
+                    <div class="flex gap-1 justify-center">
+                        <span *ngFor="let type of pokemon.types" class="type-badge px-3 py-1 rounded-md text-white text-xs font-medium
+                                     transition-transform duration-200 hover:scale-105"
+                            [style.background-color]="getTypeColor(type)">
                             {{ type | titlecase }}
                         </span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Quick Stats -->
-        <div class="favorites-stats" *ngIf="favorites.length >= 2">
-            <h3>Collection Stats</h3>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-label">Total</span>
-                    <span class="stat-value">{{ favorites.length }}</span>
+        <div *ngIf="favorites.length >= 2" class="bg-secondary border border-color rounded-xl p-5 animate-fadeIn"
+            [style.background-color]="'var(--bg-secondary)'" [style.border-color]="'var(--border-color)'">
+            <h3 class="text-primary text-base font-semibold mt-0 mb-4">Collection Stats</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <span class="block text-secondary text-xs mb-1">Total</span>
+                    <span class="text-xl font-bold text-amber-500">{{ favorites.length }}</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Unique Types</span>
-                    <span class="stat-value">{{ getUniqueTypesCount() }}</span>
+                <div class="text-center">
+                    <span class="block text-secondary text-xs mb-1">Unique Types</span>
+                    <span class="text-xl font-bold text-amber-500">{{ getUniqueTypesCount() }}</span>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-label">Avg ID</span>
-                    <span class="stat-value">{{ getAverageId() }}</span>
+                <div class="text-center">
+                    <span class="block text-secondary text-xs mb-1">Avg ID</span>
+                    <span class="text-xl font-bold text-amber-500">{{ getAverageId() }}</span>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Empty State -->
-<div class="favorites-container empty" *ngIf="showPanel && favorites.length === 0">
-    <div class="favorites-header">
-        <h2>
-            <span class="header-icon">⭐</span>
+<div class="fixed bottom-0 left-0 right-0 md:left-5 md:right-5 md:bottom-5 z-50 max-h-[80vh] overflow-y-auto 
+            bg-card rounded-t-2xl md:rounded-2xl shadow-2xl animate-slideUp"
+    *ngIf="showPanel && favorites.length === 0" [style.background-color]="'var(--bg-card)'">
+    <div class="sticky top-0 z-10 p-5 bg-gradient-to-r from-yellow-500 to-amber-500 flex justify-between items-center">
+        <h2 class="text-white text-xl font-semibold m-0 flex items-center gap-2">
+            <span class="text-2xl">⭐</span>
             Favorite Pokémon
         </h2>
-        <div class="header-actions">
-            <button class="close-btn" (click)="closeFavorites()">✕</button>
+        <div class="flex items-center gap-4">
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-xl
+                           hover:bg-white/20 transition-colors text-white" (click)="closeFavorites()">
+                ✕
+            </button>
         </div>
     </div>
-    
-    <div class="empty-content">
-        <span class="empty-icon">⭐</span>
-        <h3>No Favorites Yet</h3>
-        <p>Click the star icon on any Pokémon to add it to your favorites!</p>
+    <div class="p-10 text-center">
+        <div class="text-6xl mb-4 text-amber-300 animate-float">⭐</div>
+        <h3 class="text-primary text-xl font-semibold mb-2">No Favorites Yet</h3>
+        <p class="text-secondary max-w-sm mx-auto">
+            Click the star icon on any Pokémon to add it to your favorites!
+        </p>
     </div>
 </div>

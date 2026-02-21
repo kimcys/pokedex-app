@@ -1,18 +1,21 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { FavoritePokemon, FavoritesService } from '../../services/favorites.service';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+
+// Services
+import { FavoritePokemon, FavoritesService } from '../../services/favorites.service';
 import { SoundService } from '../../services/sound.service';
 
 @Component({
   selector: 'app-favourites',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './favourites.component.html',
-  styleUrl: './favourites.component.scss'
+  styleUrls: ['./favourites.component.scss']
 })
-export class FavouritesComponent {
-
+export class FavouritesComponent implements OnInit {
   @Output() closed = new EventEmitter<void>();
+  
   favorites: FavoritePokemon[] = [];
   showPanel = true;
 
@@ -60,16 +63,19 @@ export class FavouritesComponent {
 
   removeFavorite(id: number, event: Event): void {
     event.stopPropagation();
+    this.soundService.play('click');
     this.favoritesService.removeFavorite(id);
   }
   
   clearAll(): void {
     if (confirm('Remove all favorites?')) {
+      this.soundService.play('click');
       this.favorites.forEach(fav => this.favoritesService.removeFavorite(fav.id));
     }
   }
 
   closeFavorites(): void {
+    this.soundService.play('click');
     this.showPanel = false;
     this.closed.emit();
   }
