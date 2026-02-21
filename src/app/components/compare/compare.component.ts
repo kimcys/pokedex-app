@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { CompareService } from '../../services/compare.service';
-import { CommonModule } from '@angular/common';
 import { SoundService } from '../../services/sound.service';
 
 @Component({
   selector: 'app-compare',
-  templateUrl: './compare.component.html',
+  standalone: true,
   imports: [CommonModule],
+  templateUrl: './compare.component.html',
   styleUrls: ['./compare.component.scss']
 })
 export class CompareComponent implements OnInit {
@@ -18,7 +19,7 @@ export class CompareComponent implements OnInit {
   constructor(
     private compareService: CompareService,
     private router: Router,
-    private soundService: SoundService 
+    private soundService: SoundService
   ) { }
 
   ngOnInit(): void {
@@ -53,7 +54,7 @@ export class CompareComponent implements OnInit {
     if (maxStat === 0) return 0;
     return (statValue / maxStat) * 100;
   }
-  
+
   getSummaryBarWidth(statValue: number, totalSum: number): number {
     if (totalSum === 0) return 0;
     return (statValue / totalSum) * 100;
@@ -65,11 +66,6 @@ export class CompareComponent implements OnInit {
     }, 0);
   }
 
-  getStackedBarWidth(statValue: number, maxStat: number, totalPokemon: number): number {
-    if (maxStat === 0) return 0;
-    return (statValue / maxStat) * (100 / totalPokemon);
-  }
-  
   getTypeColor(type: string): string {
     const colors: { [key: string]: string } = {
       normal: '#A8A878',
@@ -94,21 +90,15 @@ export class CompareComponent implements OnInit {
     return colors[type] || '#777';
   }
 
-  getAdvantage(pokemon1: any, pokemon2: any): string {
-    const types1 = pokemon1.types.map((t: any) => t.type.name);
-    const types2 = pokemon2.types.map((t: any) => t.type.name);
-    const typeChart: any = {
-      fire: { strong: ['grass', 'ice', 'bug'], weak: ['water', 'rock'] },
-      water: { strong: ['fire', 'ground', 'rock'], weak: ['electric', 'grass'] },
-      grass: { strong: ['water', 'ground', 'rock'], weak: ['fire', 'ice', 'poison'] },
-    };
-
-    return ''; 
-  }
-
   removeFromCompare(pokemonId: number, event: Event): void {
     event.stopPropagation();
+    this.soundService.play('click');
     this.compareService.removeFromCompare(pokemonId);
+  }
+
+  closePanel(): void {
+    this.soundService.play('click');
+    this.showCompare = false;
   }
 
   viewPokemon(pokemonName: string): void {
@@ -117,26 +107,19 @@ export class CompareComponent implements OnInit {
   }
 
   clearCompare(): void {
+    this.soundService.play('click');
     this.compareService.clearCompare();
   }
-  
+
   formatStatName(stat: string): string {
     const statNames: { [key: string]: string } = {
       hp: 'HP',
-      attack: 'Attack',
-      defense: 'Defense',
-      'special-attack': 'Sp. Atk',
-      'special-defense': 'Sp. Def',
-      speed: 'Speed'
+      attack: 'ATTACK',
+      defense: 'DEFEND',
+      'special-attack': 'SP ATK',
+      'special-defense': 'SP DEF',
+      speed: 'SPEED'
     };
     return statNames[stat] || stat;
-  }
-
-  getGridClass(): string {
-    const count = this.compareList.length;
-    if (count === 1) return 'grid-1';
-    if (count === 2) return 'grid-2';
-    if (count === 3) return 'grid-3';
-    return 'grid-4';
   }
 }

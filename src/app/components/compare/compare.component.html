@@ -1,104 +1,154 @@
-<div class="compare-container" *ngIf="showCompare">
-    <div class="compare-header">
-        <h2>Compare Pokémon</h2>
-        <div class="header-actions">
-            <span class="compare-count">{{ compareList.length }} / 4 selected</span>
-            <button class="clear-btn" (click)="clearCompare()" *ngIf="compareList.length > 0">
+<div class="fixed bottom-0 left-0 right-0 md:left-5 md:right-5 md:bottom-5 z-50 max-h-[80vh] overflow-y-auto 
+            bg-card rounded-t-2xl md:rounded-2xl shadow-2xl animate-slideUp" *ngIf="showCompare"
+    [style.background-color]="'var(--bg-card)'">
+    <div class="sticky top-0 z-10 p-5 bg-card border-b border-color flex justify-between items-center"
+        [style.background-color]="'var(--bg-card)'" [style.border-color]="'var(--border-color)'">
+        <h2 class="text-xl font-semibold text-primary m-0">Compare Pokémon</h2>
+        <div class="flex items-center gap-4">
+            <span class="text-sm text-secondary">{{ compareList.length }} / 4 selected</span>
+            <button *ngIf="compareList.length > 0" class="px-4 py-1.5 rounded-full bg-secondary text-secondary text-sm 
+                           hover:bg-gray-200 dark-hover:bg-gray-700 transition-colors"
+                [style.background-color]="'var(--bg-secondary)'" [style.color]="'var(--text-secondary)'"
+                (click)="clearCompare()">
                 Clear All
             </button>
-            <button class="close-btn" (click)="showCompare = false">✕</button>
+            <button class="w-8 h-8 rounded-full flex items-center justify-center text-xl
+                           hover:bg-secondary transition-colors text-secondary" [style.color]="'var(--text-secondary)'"
+                (click)="closePanel()">
+                ✕
+            </button>
         </div>
     </div>
-
-    <div class="compare-content">
-        <!-- Comparison Grid -->
-        <div class="compare-grid" [class]="getGridClass()">
-            <!-- Pokemon Cards -->
-            <div class="compare-card" *ngFor="let pokemon of compareList">
-                <button class="remove-btn" (click)="removeFromCompare(pokemon.id, $event)">✕</button>
-
-                <div class="pokemon-info" (click)="viewPokemon(pokemon.name)">
-                    <div class="pokemon-header">
-                        <span class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</span>
-                        <h3>{{ pokemon.name | titlecase }}</h3>
-                    </div>
-
-                    <div class="pokemon-image">
-                        <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name">
-                    </div>
-
-                    <div class="pokemon-types">
-                        <span *ngFor="let type of pokemon.types" class="type-badge"
-                            [style.background]="getTypeColor(type.type.name)">
-                            {{ type.type.name | titlecase }}
-                        </span>
-                    </div>
-
-                    <!-- Stats Comparison -->
-                    <div class="stats-comparison">
-                        <div class="stat-row" *ngFor="let stat of selectedStats">
-                            <div class="stat-label">{{ formatStatName(stat) }}</div>
-                            <div class="stat-value">{{ getStatValue(pokemon, stat) }}</div>
-                            <div class="stat-bar-container">
-                                <div class="stat-bar"
-                                    [style.width.%]="getStatPercentage(getStatValue(pokemon, stat), getHighestStat(stat))"
-                                    [style.background]="getTypeColor(pokemon.types[0].type.name)">
+    <div class="p-5">
+        <div *ngIf="compareList.length === 0" class="flex flex-col items-center justify-center py-16 px-4 text-center">
+            <div class="w-24 h-24 rounded-full bg-secondary flex items-center justify-center mb-4"
+                [style.background-color]="'var(--bg-secondary)'">
+                <span class="text-4xl text-secondary">🔄</span>
+            </div>
+            <h3 class="text-primary text-xl font-semibold mb-2">No Pokémon to Compare</h3>
+            <p class="text-secondary max-w-md mb-6">
+                Select up to 4 Pokémon from the list to compare their stats and abilities side by side.
+            </p>
+            <button class="px-6 py-2 bg-blue-500 text-white rounded-full font-medium
+                           hover:bg-blue-600 transition-colors" (click)="closePanel()">
+                Browse Pokémon
+            </button>
+        </div>
+        <ng-container *ngIf="compareList.length > 0">
+            <div class="grid gap-5 mb-8" [class.grid-cols-1]="compareList.length === 1"
+                [class.grid-cols-2]="compareList.length === 2" [class.grid-cols-3]="compareList.length === 3"
+                [class.grid-cols-4]="compareList.length === 4"
+                [class.sm:grid-cols-2]="compareList.length === 3 || compareList.length === 4"
+                [class.max-sm:grid-cols-1]="true">
+                <div *ngFor="let pokemon of compareList"
+                    class="bg-secondary border border-color rounded-xl p-4 relative transition-transform hover:-translate-y-1 hover:shadow-lg"
+                    [style.background-color]="'var(--bg-secondary)'" [style.border-color]="'var(--border-color)'">
+                    <button class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-red-500 text-white 
+                                   flex items-center justify-center text-sm z-10
+                                   hover:bg-red-600 transition-colors shadow-md"
+                        (click)="removeFromCompare(pokemon.id, $event)">
+                        ✕
+                    </button>
+                    <div class="cursor-pointer" (click)="viewPokemon(pokemon.name)">
+                        <div class="text-center mb-3">
+                            <span class="text-secondary text-xs">#{{ pokemon.id.toString().padStart(3, '0') }}</span>
+                            <h3 class="text-primary font-semibold text-base mt-1 capitalize">{{ pokemon.name }}</h3>
+                        </div>
+                        <div class="flex justify-center mb-3">
+                            <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name"
+                                class="w-28 h-28 object-contain">
+                        </div>
+                        <div class="flex gap-1 justify-center mb-4">
+                            <span *ngFor="let type of pokemon.types"
+                                class="type-badge px-3 py-1 rounded-md text-white text-xs font-medium"
+                                [style.background-color]="getTypeColor(type.type.name)">
+                                {{ type.type.name | titlecase }}
+                            </span>
+                        </div>
+                        <div class="space-y-3">
+                            <div *ngFor="let stat of selectedStats" class="stat-row">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-secondary">{{ formatStatName(stat) }}</span>
+                                    <span class="text-primary font-bold">{{ getStatValue(pokemon, stat) }}</span>
+                                </div>
+                                <div class="h-2 rounded-full overflow-hidden"
+                                    [style.background-color]="'var(--border-color)'">
+                                    <div class="h-full rounded-full transition-all duration-300"
+                                        [style.width.%]="getStatPercentage(getStatValue(pokemon, stat), getHighestStat(stat))"
+                                        [style.background-color]="getTypeColor(pokemon.types[0].type.name)">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-3 mt-2 border-t border-color" [style.border-color]="'var(--border-color)'">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-secondary font-bold">Total</span>
+                                    <span class="text-primary font-bold">{{ getTotalStats(pokemon) }}</span>
+                                </div>
+                                <div class="h-2 rounded-full overflow-hidden"
+                                    [style.background-color]="'var(--border-color)'">
+                                    <div class="h-full rounded-full bg-green-500 transition-all duration-300"
+                                        [style.width.%]="(getTotalStats(pokemon) / 800) * 100">
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div *ngFor="let i of [].constructor(4 - compareList.length)" class="bg-secondary border-2 border-dashed border-color rounded-xl p-8 
+                            flex items-center justify-center min-h-[300px]"
+                    [style.background-color]="'var(--bg-secondary)'" [style.border-color]="'var(--border-color)'">
+                    <div class="text-center text-secondary">
+                        <span class="text-5xl block mb-3">+</span>
+                        <p class="m-0">Add Pokémon to compare</p>
+                    </div>
+                </div>
+            </div>
+            <div *ngIf="compareList.length >= 2" class="bg-secondary border border-color rounded-xl p-5"
+                [style.background-color]="'var(--bg-secondary)'" [style.border-color]="'var(--border-color)'">
 
-                        <div class="stat-row total">
-                            <div class="stat-label">Total</div>
-                            <div class="stat-value">{{ getTotalStats(pokemon) }}</div>
-                            <div class="stat-bar-container">
-                                <div class="stat-bar" [style.width.%]="(getTotalStats(pokemon) / 800) * 100"
-                                    style="background: #4CAF50">
-                                </div>
+                <h3 class="text-primary text-lg font-semibold mt-0 mb-5">Comparison Summary</h3>
+                <div class="space-y-5">
+                    <div *ngFor="let stat of selectedStats" class="bg-card border border-color rounded-lg p-4"
+                        [style.background-color]="'var(--bg-card)'" [style.border-color]="'var(--border-color)'">
+                        <div class="font-bold text-primary mb-3 text-sm uppercase tracking-wider">
+                            {{ formatStatName(stat) }}
+                        </div>
+                        <div class="flex h-10 rounded-full overflow-hidden mb-3 shadow-inner"
+                            [style.background-color]="'var(--border-color)'">
+                            <div *ngFor="let pokemon of compareList"
+                                class="h-full flex items-center justify-center text-white text-xs font-bold
+                                        relative transition-all duration-300 hover:brightness-110 hover:scale-y-105 group"
+                                [style.width.%]="getSummaryBarWidth(getStatValue(pokemon, stat), getTotalSumForStat(stat))"
+                                [style.minWidth.%]="3"
+                                [style.background-color]="getTypeColor(pokemon.types[0].type.name)"
+                                [style.border-right]="'2px solid rgba(255,255,255,0.3)'">
+                                <span
+                                    class="relative z-10 text-shadow px-1.5 py-0.5 rounded-full bg-black/20 text-[10px]">
+                                    {{ getStatValue(pokemon, stat) }}
+                                </span>
+                                <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white 
+                                             text-xs px-2 py-1 rounded whitespace-nowrap hidden group-hover:block
+                                             after:content-[''] after:absolute after:top-full after:left-1/2 
+                                             after:-ml-1 after:border-4 after:border-solid 
+                                             after:border-transparent after:border-t-gray-800">
+                                    {{ pokemon.name | titlecase }}: {{ getStatValue(pokemon, stat) }}
+                                </span>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty Slots -->
-            <div class="empty-slot" *ngFor="let i of [].constructor(4 - compareList.length)">
-                <div class="empty-content">
-                    <span class="plus-icon">+</span>
-                    <p>Add Pokémon to compare</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Comparison Summary -->
-        <!-- Comparison Summary -->
-        <div class="comparison-summary" *ngIf="compareList.length >= 2">
-            <h3>Comparison Summary</h3>
-            <div class="summary-grid">
-                <div class="summary-item" *ngFor="let stat of selectedStats">
-                    <div class="summary-label">{{ formatStatName(stat) }}</div>
-
-                    <!-- Option 1: Proportional to total sum (fills entire width) -->
-                    <div class="summary-bars proportional">
-                        <div *ngFor="let pokemon of compareList" class="summary-bar" [style.width.%]="getSummaryBarWidth(
-                       getStatValue(pokemon, stat), 
-                       getTotalSumForStat(stat)
-                     )" [style.background]="getTypeColor(pokemon.types[0].type.name)" [style.minWidth.%]="3"
-                            [attr.data-pokemon]="pokemon.name" [attr.data-value]="getStatValue(pokemon, stat)">
-                            <span class="summary-value">{{ getStatValue(pokemon, stat) }}</span>
+                        <div class="flex flex-wrap gap-2 mb-3">
+                            <span *ngFor="let pokemon of compareList"
+                                class="px-3 py-1 rounded-full text-white text-xs font-medium opacity-90 hover:opacity-100 hover:scale-105 transition-all"
+                                [style.background-color]="getTypeColor(pokemon.types[0].type.name)">
+                                {{ pokemon.name | titlecase }}: {{ getStatValue(pokemon, stat) }}
+                            </span>
+                        </div>
+                        <div class="text-right text-secondary text-sm pt-2 border-t border-dashed border-color"
+                            [style.border-color]="'var(--border-color)'">
+                            Average: {{ getAverageStat(stat) }}
                         </div>
                     </div>
-
-                    <!-- Show the raw values below for clarity -->
-                    <div class="summary-values">
-                        <span *ngFor="let pokemon of compareList" class="value-tag"
-                            [style.background]="getTypeColor(pokemon.types[0].type.name)">
-                            {{ pokemon.name | slice:0:3 }}: {{ getStatValue(pokemon, stat) }}
-                        </span>
-                    </div>
-
-                    <div class="summary-average">Average: {{ getAverageStat(stat) }}</div>
                 </div>
             </div>
-        </div>
+        </ng-container>
     </div>
 </div>
