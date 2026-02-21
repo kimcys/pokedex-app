@@ -1,8 +1,10 @@
-/* Import Tailwind */
+/* Import Tailwind CSS v4 */
 @import 'tailwindcss';
+
+/* Import Material theme */
 @import '../src/styles/material-theme.scss';
 
-/* Type colors */
+/* Type colors - keep these */
 .type-normal { background-color: #A8A878; }
 .type-fire { background-color: #F08030; }
 .type-water { background-color: #6890F0; }
@@ -30,19 +32,31 @@
   --text-primary: #333333;
   --text-secondary: #666666;
   --border-color: #e0e0e0;
-  --shadow-color: rgba(0, 0, 0, 0.1);
-  --hover-shadow: rgba(0, 0, 0, 0.2);
 }
 
+/* Use the same class name as your service adds */
 .dark-theme {
-  --bg-primary: #1a1a2e;
-  --bg-secondary: #16213e;
   --bg-card: #0f3460;
   --text-primary: #e1e1e1;
   --text-secondary: #b8b8b8;
   --border-color: #2a2a4a;
-  --shadow-color: rgba(0, 0, 0, 0.5);
-  --hover-shadow: rgba(0, 0, 0, 0.7);
+}
+
+/* Custom utility classes using CSS variables */
+.bg-card {
+  background-color: var(--bg-card);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.border-color {
+  border-color: var(--border-color);
 }
 
 /* Base styles */

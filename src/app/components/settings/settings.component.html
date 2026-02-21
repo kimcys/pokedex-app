@@ -1,28 +1,62 @@
-<div class="settings-panel">
-    <h3>Settings</h3>
+<div class="bg-card rounded-xl shadow-lg p-5 border border-color">
+    <div class="flex justify-between items-center py-4 border-b border-color">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-secondary">dark_mode</mat-icon>
+            <span class="text-primary font-medium">Dark Mode</span>
+        </div>
 
-    <div class="setting-item">
-        <label>Dark Mode</label>
-        <button (click)="toggleDarkMode()" class="toggle-btn">
-            {{ (darkMode$ | async) ? '🌙' : '☀️' }}
-        </button>
+        <mat-slide-toggle [checked]="(darkMode$ | async) ?? false" (change)="toggleDarkMode()" color="primary">
+            <span class="text-sm text-secondary">
+                {{ (darkMode$ | async) ? 'On' : 'Off' }}
+            </span>
+        </mat-slide-toggle>
     </div>
 
-    <div class="setting-item">
-        <label>Sound Effects</label>
-        <button (click)="toggleSound()" class="toggle-btn">
-          {{ soundEnabled ? '🔊' : '🔇' }}
-        </button>
-      </div>
+    <!-- Sound Effects Toggle -->
+    <div class="flex justify-between items-center py-4 border-b border-color">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-secondary">
+                {{ soundEnabled ? 'volume_up' : 'volume_off' }}
+            </mat-icon>
+            <span class="text-primary font-medium">Sound Effects</span>
+        </div>
 
-    <div class="setting-item">
-        <label>Cache Size</label>
-        <span>{{ getCacheSize() }} items</span>
-        <button (click)="clearCache()" class="danger-btn">Clear Cache</button>
+        <mat-slide-toggle [checked]="soundEnabled" (change)="toggleSound()" color="primary">
+            <span class="text-sm text-secondary">
+                {{ soundEnabled ? 'On' : 'Off' }}
+            </span>
+        </mat-slide-toggle>
     </div>
 
-    <div class="setting-item">
-        <label>Favorites</label>
-        <span>{{ getFavoritesCount() }} saved</span>
+    <!-- Cache Size -->
+    <div class="flex justify-between items-center py-4 border-b border-color">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-secondary">storage</mat-icon>
+            <span class="text-primary font-medium">Cache Size</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <span class="text-secondary">{{ getCacheSize() }} items</span>
+            <button mat-raised-button color="warn" (click)="clearCache()" [matTooltip]="'Clear cached data'"
+                class="!min-w-[100px]">
+                <mat-icon class="mr-1">delete</mat-icon>
+                Clear
+            </button>
+        </div>
+    </div>
+
+    <!-- Favorites Count -->
+    <div class="flex justify-between items-center py-4">
+        <div class="flex items-center gap-3">
+            <mat-icon class="text-yellow-500">star</mat-icon>
+            <span class="text-primary font-medium">Favorites</span>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <span class="text-secondary">{{ getFavoritesCount() }} saved</span>
+            <mat-chip-set>
+                <mat-chip color="primary" selected>{{ getFavoritesCount() }}</mat-chip>
+            </mat-chip-set>
+        </div>
     </div>
 </div>

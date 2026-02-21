@@ -48,6 +48,14 @@ export class CacheService {
     return null;
   }
 
+  getSize(): number {
+    const memorySize = this.cache.size;
+    const storageSize = Object.keys(localStorage)
+      .filter(key => key.startsWith('pokemon_'))
+      .length;
+    return storageSize || memorySize;
+  }
+
   clear(): void {
     this.cache.clear();
     Object.keys(localStorage)

@@ -16,10 +16,17 @@ export class ThemeService {
   }
 
   private loadTheme(): void {
-    const savedTheme = localStorage.getItem('darkMode');
-    const isDark = savedTheme === 'true';
-    this.darkModeSubject.next(isDark);
-    this.applyTheme(isDark);
+    const savedTheme = localStorage.getItem('darkMode');    
+    if (savedTheme !== null) {
+      const isDark = savedTheme === 'true';
+      this.darkModeSubject.next(isDark);
+      this.applyTheme(isDark);
+    } else {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      this.darkModeSubject.next(prefersDark);
+      this.applyTheme(prefersDark);
+      localStorage.setItem('darkMode', String(prefersDark));
+    }
   }
 
   toggleDarkMode(): void {
@@ -31,9 +38,14 @@ export class ThemeService {
 
   private applyTheme(isDark: boolean): void {
     if (isDark) {
+      this.renderer.addClass(document.documentElement, 'dark');
       this.renderer.addClass(document.body, 'dark-theme');
     } else {
+      this.renderer.removeClass(document.documentElement, 'dark');
       this.renderer.removeClass(document.body, 'dark-theme');
     }
+  }
+  isDarkMode(): boolean {
+    return this.darkModeSubject.value;
   }
 }

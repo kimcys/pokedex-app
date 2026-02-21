@@ -1,19 +1,37 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Observable } from 'rxjs';
+
+// Services
 import { ThemeService } from '../../services/theme.service';
 import { SoundService } from '../../services/sound.service';
 import { CacheService } from '../../services/cache.service';
 import { FavoritesService } from '../../services/favorites.service';
-import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
+
+// Angular Material Imports
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-settings',
-  imports: [CommonModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatSlideToggleModule,
+    MatIconModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatChipsModule,
+    MatDividerModule
+  ],
   templateUrl: './settings.component.html',
-  styleUrl: './settings.component.scss'
+  styleUrls: ['./settings.component.scss'] // Can be empty or removed if using only Tailwind
 })
 export class SettingsComponent {
-
   soundEnabled = true;
   darkMode$!: Observable<boolean>;
 
@@ -33,7 +51,6 @@ export class SettingsComponent {
 
   toggleSound(): void {
     this.soundService.toggleSounds();
-    this.soundEnabled = !this.soundEnabled;
     if (this.soundEnabled) {
       setTimeout(() => this.soundService.play('click'), 100);
     }
@@ -45,11 +62,16 @@ export class SettingsComponent {
   }
 
   getCacheSize(): number {
-    return 0;
+    // Implement actual cache size logic
+    return this.cacheService.getSize() || 0;
   }
 
   getFavoritesCount(): number {
     return this.favoritesService.getFavorites().length;
   }
 
+  get documentElementClass(): string {
+    return document.documentElement.classList.contains('dark') ? 'Yes' : 'No';
+  }
+  
 }
