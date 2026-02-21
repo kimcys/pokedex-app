@@ -5,24 +5,77 @@
 @import '../src/styles/material-theme.scss';
 
 /* Type colors - keep these */
-.type-normal { background-color: #A8A878; }
-.type-fire { background-color: #F08030; }
-.type-water { background-color: #6890F0; }
-.type-grass { background-color: #78C850; }
-.type-electric { background-color: #F8D030; }
-.type-ice { background-color: #98D8D8; }
-.type-fighting { background-color: #C03028; }
-.type-poison { background-color: #A040A0; }
-.type-ground { background-color: #E0C068; }
-.type-flying { background-color: #A890F0; }
-.type-psychic { background-color: #F85888; }
-.type-bug { background-color: #A8B820; }
-.type-rock { background-color: #B8A038; }
-.type-ghost { background-color: #705898; }
-.type-dragon { background-color: #7038F8; }
-.type-dark { background-color: #705848; }
-.type-steel { background-color: #B8B8D0; }
-.type-fairy { background-color: #EE99AC; }
+.type-normal {
+  background-color: #A8A878;
+}
+
+.type-fire {
+  background-color: #F08030;
+}
+
+.type-water {
+  background-color: #6890F0;
+}
+
+.type-grass {
+  background-color: #78C850;
+}
+
+.type-electric {
+  background-color: #F8D030;
+}
+
+.type-ice {
+  background-color: #98D8D8;
+}
+
+.type-fighting {
+  background-color: #C03028;
+}
+
+.type-poison {
+  background-color: #A040A0;
+}
+
+.type-ground {
+  background-color: #E0C068;
+}
+
+.type-flying {
+  background-color: #A890F0;
+}
+
+.type-psychic {
+  background-color: #F85888;
+}
+
+.type-bug {
+  background-color: #A8B820;
+}
+
+.type-rock {
+  background-color: #B8A038;
+}
+
+.type-ghost {
+  background-color: #705898;
+}
+
+.type-dragon {
+  background-color: #7038F8;
+}
+
+.type-dark {
+  background-color: #705848;
+}
+
+.type-steel {
+  background-color: #B8B8D0;
+}
+
+.type-fairy {
+  background-color: #EE99AC;
+}
 
 /* CSS Variables */
 :root {
@@ -36,13 +89,21 @@
 
 /* Use the same class name as your service adds */
 .dark-theme {
-  --bg-card: #0f3460;
+  --bg-card: #000000;
   --text-primary: #e1e1e1;
   --text-secondary: #b8b8b8;
-  --border-color: #2a2a4a;
+  --border-color: #25252c;
+  --bg-primary: #25252c;
 }
 
-/* Custom utility classes using CSS variables */
+.bg-primary {
+  background-color: var(--bg-primary);
+}
+
+.bg-secondary {
+  background-color: var(--bg-secondary);
+}
+
 .bg-card {
   background-color: var(--bg-card);
 }
@@ -59,13 +120,18 @@
   border-color: var(--border-color);
 }
 
-/* Base styles */
-html, body { 
-  height: 100%; 
+.header-shadow {
+  box-shadow: 0 2px 8px var(--shadow-color);
 }
 
-body { 
-  margin: 0; 
+/* Base styles */
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
@@ -93,6 +159,11 @@ body {
 
 /* Animation */
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }

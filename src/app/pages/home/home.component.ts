@@ -1,20 +1,25 @@
-import { Component } from '@angular/core';
-import { PokemonListItem } from '../../models/pokemon.model';
-import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
-import { PokemonService } from '../../services/pokemon.service';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
+import { PokemonListItem } from '../../models/pokemon.model';
+import { PokemonService } from '../../services/pokemon.service';
 import { SoundService } from '../../services/sound.service';
+import { PokemonCardComponent } from '../../components/pokemon-card/pokemon-card.component';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, PokemonCardComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    PokemonCardComponent,
+    MatIconModule,
+  ],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrls: ['./home.component.scss']
 })
-export class HomeComponent {
-
+export class HomeComponent implements OnInit, OnDestroy {
   pokemonList: PokemonListItem[] = [];
   filteredPokemon: PokemonListItem[] = [];
   types: string[] = [];
@@ -28,10 +33,14 @@ export class HomeComponent {
   private searchSubject = new Subject<string>();
   private destroy$ = new Subject<void>();
 
+  @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLElement>;
+  private io?: IntersectionObserver;
+  private isLoadingMore = false;
+
   constructor(
     private pokemonService: PokemonService,
     private router: Router,
-    private soundService: SoundService  
+    private soundService: SoundService
   ) { }
 
   ngOnInit(): void {
@@ -43,6 +52,7 @@ export class HomeComponent {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.io?.disconnect();
   }
 
   onPokemonClick(pokemonName: string): void {
@@ -50,13 +60,14 @@ export class HomeComponent {
     this.router.navigate(['/pokemon', pokemonName]);
   }
 
-  setupSearch(): void {
+  private setupSearch(): void {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
       takeUntil(this.destroy$)
     ).subscribe(searchTerm => {
       this.searchTerm = searchTerm;
+      this.currentPage = 0;
       this.filterPokemon();
     });
   }
@@ -69,6 +80,7 @@ export class HomeComponent {
         this.totalCount = data.length;
         this.filterPokemon();
         this.isLoading = false;
+        setTimeout(() => this.setupInfiniteScroll(), 0);
       },
       error: (error) => {
         console.error('Error loading pokemon:', error);
@@ -91,13 +103,72 @@ export class HomeComponent {
     this.searchSubject.next(term);
   }
 
+  clearSearch(): void {
+    const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+    if (input) {
+      input.value = '';
+      this.searchSubject.next('');
+    }
+  }
+
   filterByType(type: string): void {
+    this.soundService.play('click');
     this.selectedType = this.selectedType === type ? '' : type;
     this.currentPage = 0;
     this.filterPokemon();
   }
 
+  getTypeButtonClass(type: string): string {
+    const baseClass = 'px-4 py-2 rounded-xl border-2 font-medium transition-all duration-200 hover:scale-105 active:scale-95';
+    return baseClass;
+  }
+
   filterPokemon(): void {
+    let filtered = [...this.pokemonList];
+
+    // Apply search filter
+    if (this.searchTerm) {
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply type filter
+    if (this.selectedType) {
+      this.isLoading = true;
+      this.pokemonService.getPokemonByType(this.selectedType).subscribe({
+        next: (pokemonOfType) => {
+          const typePokemonNames = pokemonOfType.map(p => p.pokemon.name);
+          filtered = filtered.filter(p => typePokemonNames.includes(p.name));
+          this.totalCount = filtered.length;
+
+          // Apply pagination
+          const start = this.currentPage * this.itemsPerPage;
+          const end = start + this.itemsPerPage;
+          this.filteredPokemon = filtered.slice(start, end);
+          this.isLoading = false;
+          this.setupInfiniteScroll();
+        },
+        error: (error) => {
+          console.error('Error filtering by type:', error);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.totalCount = filtered.length;
+
+      // Apply pagination
+      const start = this.currentPage * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      this.filteredPokemon = filtered.slice(start, end);
+    }
+  }
+
+  loadMore(): void {
+    if (this.isLoading || this.isLoadingMore) return;
+    if (this.filteredPokemon.length >= this.totalCount) return;
+    this.isLoadingMore = true;
+    this.currentPage++;
     let filtered = [...this.pokemonList];
 
     if (this.searchTerm) {
@@ -105,42 +176,51 @@ export class HomeComponent {
         p.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
+
+    const applyPagination = (list: PokemonListItem[]) => {
+      const start = this.currentPage * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      const moreItems = list.slice(start, end);
+
+      this.filteredPokemon = [...this.filteredPokemon, ...moreItems];
+      this.isLoadingMore = false;
+      setTimeout(() => this.setupInfiniteScroll(), 0);
+    };
 
     if (this.selectedType) {
       this.pokemonService.getPokemonByType(this.selectedType).subscribe({
         next: (pokemonOfType) => {
-          const typePokemonNames = pokemonOfType.map((p: { pokemon: { name: string } }) => p.pokemon.name);
-          filtered = filtered.filter(p => typePokemonNames.includes(p.name));
-          this.applyPagination(filtered);
+          const typePokemonNames = pokemonOfType.map(p => p.pokemon.name);
+          const typed = filtered.filter(p => typePokemonNames.includes(p.name));
+          applyPagination(typed);
+        },
+        error: () => {
+          this.isLoadingMore = false;
         }
       });
     } else {
-      this.applyPagination(filtered);
+      applyPagination(filtered);
     }
   }
 
-  applyPagination(filtered: PokemonListItem[]): void {
-    this.totalCount = filtered.length;
-    const start = this.currentPage * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-    this.filteredPokemon = filtered.slice(start, end);
-  }
+  private setupInfiniteScroll(): void {
+    this.io?.disconnect();
+    if (!this.loadMoreTrigger?.nativeElement) return;
+    this.io = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first?.isIntersecting) {
+          this.loadMore();
+        }
+      },
+      {
+        root: null,
+        rootMargin: '400px',
+        threshold: 0.01
+      }
+    );
 
-  loadMore(): void {
-    this.currentPage++;
-    const start = this.currentPage * this.itemsPerPage;
-    const end = start + this.itemsPerPage;
-
-    let filtered = [...this.pokemonList];
-
-    if (this.searchTerm) {
-      filtered = filtered.filter(p =>
-        p.name.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-
-    const moreItems = filtered.slice(start, end);
-    this.filteredPokemon = [...this.filteredPokemon, ...moreItems];
+    this.io.observe(this.loadMoreTrigger.nativeElement);
   }
 
   getTypeColor(type: string): string {

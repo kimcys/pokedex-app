@@ -1,39 +1,46 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
-import { forkJoin, map, of, switchMap } from 'rxjs';
+import { forkJoin, map, switchMap } from 'rxjs';
 import { EvolutionChain, Pokemon } from '../../models/pokemon.model';
 import { PokemonService } from '../../services/pokemon.service';
 import { SoundService } from '../../services/sound.service';
+import { MatIconModule } from '@angular/material/icon';
 
 type TypeEfficiencyRow = { type: string; multiplier: number; effect: string };
+type TypeRelationsUI = {
+  doubleFrom: string[];
+  doubleTo: string[];
+  halfFrom: string[];
+  halfTo: string[];
+  noFrom: string[];
+  noTo: string[];
+};
+type TypeEfficiencyByType = Record<string, TypeRelationsUI>;
+
 
 @Component({
   selector: 'app-pokemon-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, MatIconModule],
   templateUrl: './pokemon-detail.component.html',
-  styleUrl: './pokemon-detail.component.scss'
+  styleUrls: ['./pokemon-detail.component.scss']
 })
 export class PokemonDetailComponent {
   @Input() pokemonName!: string;
   @Input() pokemonId!: number;
-
   @Output() pokemonChange = new EventEmitter<string>();
 
   pokemon?: Pokemon;
   evolutionChain: EvolutionChain[] = [];
   isLoading = true;
-
-  // abilityName -> description
+  typeEfficiencyByType: TypeEfficiencyByType = {};
   abilityDescMap: Record<string, string> = {};
-
-  // Combined incoming-damage multipliers for this pokemon (based on its types)
   typeEfficiencies: TypeEfficiencyRow[] = [];
 
   constructor(
     private pokemonService: PokemonService,
     private soundService: SoundService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadPokemonDetails();
@@ -45,16 +52,13 @@ export class PokemonDetailComponent {
     }
   }
 
-  // ---------------------------
-  // MAIN LOADER
-  // ---------------------------
   loadPokemonDetails(): void {
-    // reset state (prevents stale/missing UI when switching)
     this.isLoading = true;
     this.pokemon = undefined;
     this.evolutionChain = [];
     this.typeEfficiencies = [];
     this.abilityDescMap = {};
+    this.typeEfficiencyByType = {};
 
     const request$ = this.pokemonName
       ? this.pokemonService.getPokemonDetails(this.pokemonName)
@@ -63,14 +67,9 @@ export class PokemonDetailComponent {
     request$.subscribe({
       next: (data) => {
         this.pokemon = data;
-
-        // kick off parallel loads
         this.loadEvolutionChain();
         this.loadAbilityDescriptions();
         this.calculateTypeEfficienciesFromApi();
-
-        // NOTE: isLoading should finish after evo chain (or you can coordinate all)
-        // We'll set to false in evo chain subscribe.
       },
       error: (error) => {
         console.error('Error loading pokemon details:', error);
@@ -79,9 +78,6 @@ export class PokemonDetailComponent {
     });
   }
 
-  // ---------------------------
-  // EVOLUTION CHAIN (species -> chain)
-  // ---------------------------
   loadEvolutionChain(): void {
     if (!this.pokemon?.species?.url) {
       this.isLoading = false;
@@ -125,13 +121,8 @@ export class PokemonDetailComponent {
     return out;
   }
 
-  // ---------------------------
-  // ABILITY DESCRIPTIONS (API)
-  // ---------------------------
   loadAbilityDescriptions(): void {
     if (!this.pokemon?.abilities?.length) return;
-
-    // Build requests: /ability/{name}
     const reqs$ = this.pokemon.abilities.map(a =>
       this.pokemonService.getAbilityDetails(a.ability.name).pipe(
         map(res => {
@@ -153,62 +144,43 @@ export class PokemonDetailComponent {
   }
 
   getAbilityDescription(abilityName: string): string {
-    return this.abilityDescMap[abilityName.toLowerCase()] || 'Loading...';
+    return this.abilityDescMap[abilityName.toLowerCase()] || 'Loading description...';
   }
 
-  // ---------------------------
-  // TYPE EFFICIENCY (API damage_relations)
-  // Incoming damage multipliers: double/half/no damage FROM
-  // ---------------------------
   calculateTypeEfficienciesFromApi(): void {
     if (!this.pokemon?.types?.length) return;
 
     const myTypes = this.pokemon.types.map(t => t.type.name);
 
-    const reqs$ = myTypes.map(t => this.pokemonService.getTypeDetails(t));
-
-    forkJoin(reqs$).subscribe({
+    forkJoin(myTypes.map(t => this.pokemonService.getTypeDetails(t))).subscribe({
       next: (typesData: any[]) => {
-        const mult: Record<string, number> = {};
+        const out: TypeEfficiencyByType = {};
 
-        const apply = (arr: any[], factor: number) => {
-          (arr ?? []).forEach(x => {
-            const name = x.name;
-            // 0 beats everything (no effect stays 0)
-            if (mult[name] === 0) return;
-            mult[name] = (mult[name] ?? 1) * factor;
-          });
-        };
+        typesData.forEach((td: any) => {
+          const typeName: string = td?.name;
+          const rel = td?.damage_relations ?? {};
 
-        typesData.forEach(td => {
-          const rel = td.damage_relations;
-          apply(rel?.double_damage_from, 2);
-          apply(rel?.half_damage_from, 0.5);
-          apply(rel?.no_damage_from, 0);
+          const names = (arr: any[]) => (arr ?? []).map(x => x.name);
+
+          out[typeName] = {
+            doubleFrom: names(rel.double_damage_from),
+            doubleTo: names(rel.double_damage_to),
+            halfFrom: names(rel.half_damage_from),
+            halfTo: names(rel.half_damage_to),
+            noFrom: names(rel.no_damage_from),
+            noTo: names(rel.no_damage_to),
+          };
         });
 
-        this.typeEfficiencies = Object.entries(mult)
-          .filter(([, m]) => m !== 1) // only show changed matchups
-          .map(([type, multiplier]) => ({
-            type,
-            multiplier,
-            effect:
-              multiplier === 0 ? 'no effect' :
-              multiplier > 1 ? 'super effective' :
-              'not very effective'
-          }))
-          .sort((a, b) => b.multiplier - a.multiplier);
+        this.typeEfficiencyByType = out;
       },
       error: (err) => {
         console.error('Error loading type efficiencies:', err);
-        this.typeEfficiencies = [];
+        this.typeEfficiencyByType = {};
       }
     });
   }
 
-  // ---------------------------
-  // UI HELPERS (you already had)
-  // ---------------------------
   getPokemonImage(): string {
     return this.pokemon?.sprites?.other?.showdown?.front_default
       || this.pokemon?.sprites?.other?.['official-artwork']?.front_default
@@ -242,13 +214,38 @@ export class PokemonDetailComponent {
   formatStatName(stat: string): string {
     const statNames: { [key: string]: string } = {
       hp: 'HP',
-      attack: 'Attack',
-      defense: 'Defense',
-      'special-attack': 'Sp. Atk',
-      'special-defense': 'Sp. Def',
-      speed: 'Speed'
+      attack: 'ATTACK',
+      defense: 'DEFEND',
+      'special-attack': 'SP ATK',
+      'special-defense': 'SP DEF',
+      speed: 'SPEED'
     };
     return statNames[stat] || stat;
+  }
+
+  getStatStyles(stat: string): { bg: string; text: string; border: string } {
+    const colors: Record<string, string> = {
+      hp: '#ef4444',
+      attack: '#f97316',
+      defense: '#3b82f6',
+      'special-attack': '#a855f7',
+      'special-defense': '#14b8a6',
+      speed: '#eab308'
+    };
+    const base = colors[stat] || '#6b7280';
+    const isDark = document.body.classList.contains('dark-theme');
+    return {
+      bg: isDark ? this.hexToRgba(base, 0.15) : this.hexToRgba(base, 0.08),
+      text: base,
+      border: this.hexToRgba(base, isDark ? 0.6 : 0.4)
+    };
+  }
+
+  private hexToRgba(hex: string, alpha: number): string {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
   }
 
   getPokemonIdFromUrl(url: string): string {
@@ -265,8 +262,4 @@ export class PokemonDetailComponent {
     if (!this.pokemon?.abilities?.length) return false;
     return index === this.pokemon.abilities.length - 1;
   }
-
-  // isHiddenAbility(index: number): boolean {
-  //   return this.pokemon?.abilities?.[index]?.is_hidden ?? false;
-  // }
 }

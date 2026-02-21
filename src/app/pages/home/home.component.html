@@ -1,53 +1,85 @@
-<div class="home-container">
+<div class="bg-primary">
     <!-- Hero Section -->
-    <section class="hero">
-        <h1>Pokédex</h1>
-        <p>Search and discover your favorite Pokémon</p>
+    <section class="text-center py-16 px-4">
+        <h1 class="text-5xl md:text-6xl font-bold mb-4" [style.color]="'var(--text-primary)'">
+            Pokédex
+        </h1>
+        <p class="text-xl md:text-2xl" [style.color]="'var(--text-secondary)'">
+            Search and discover your favorite Pokémon
+        </p>
     </section>
 
-    <!-- Search Bar -->
-    <div class="search-section">
-        <div class="search-wrapper">
-            <input type="text" class="search-input" placeholder="Search Pokémon by name..." (input)="onSearch($event)">
-            <span class="search-icon">🔍</span>
+    <!-- Modern Search Bar -->
+    <div class="max-w-2xl mx-auto mb-8 px-4">
+        <div class="relative group">
+            <input type="text" placeholder="Search Pokémon..." (input)="onSearch($event)" class="w-full px-6 py-4 pl-14 text-gray-900 dark:text-white 
+                       bg-gray-50 dark:bg-gray-800 
+                       border-2 border-gray-200 dark:border-gray-700 
+                       rounded-2xl 
+                       placeholder:text-gray-400 dark:placeholder:text-gray-500
+                       focus:outline-none focus:border-blue-500 dark:focus:border-blue-400
+                       focus:ring-4 focus:ring-blue-500/20
+                       transition-all duration-200
+                       text-base">
+            <mat-icon
+                class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 group-focus-within:text-blue-500 transition-colors">
+                search
+            </mat-icon>
+
+            <!-- Optional: Clear button (shows when typing) -->
+            <button *ngIf="searchTerm" (click)="clearSearch()"
+                class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors">
+                <mat-icon class="text-xl">close</mat-icon>
+            </button>
         </div>
     </div>
 
-    <!-- Type Filters -->
-    <div class="filters-section">
-        <h3>Filter by Type:</h3>
-        <div class="type-filters">
-            <button *ngFor="let type of types" class="type-filter-btn" [class.active]="selectedType === type"
-                [style.background]="selectedType === type ? getTypeColor(type) : '#e0e0e0'"
-                (click)="filterByType(type)">
+    <div class="max-w-7xl mx-auto mb-8 px-4">
+        <h3 class="text-sm font-medium uppercase tracking-wider mb-4" [style.color]="'var(--text-secondary)'">
+            Filter by Type
+        </h3>
+        <div class="flex flex-wrap gap-2">
+            <button *ngFor="let type of types" (click)="filterByType(type)" [class]="getTypeButtonClass(type)"
+                [style.background-color]="selectedType === type ? getTypeColor(type) : 'var(--bg-card)'"
+                [style.border-color]="getTypeColor(type)"
+                [style.color]="selectedType === type ? 'white' : getTypeColor(type)" class="px-4 py-2 rounded-xl border-2 font-medium 
+                       transition-all duration-200 hover:scale-105 active:scale-95">
                 {{ type | titlecase }}
             </button>
         </div>
     </div>
 
     <!-- Results Info -->
-    <div class="results-info">
-        <p>Showing {{ filteredPokemon.length }} of {{ totalCount }} Pokémon</p>
+    <div class="max-w-7xl mx-auto mb-4 px-4">
+        <p class="text-sm" [style.color]="'var(--text-secondary)'">
+            Showing <span class="font-semibold text-primary">{{ filteredPokemon.length }}</span> of
+            <span class="font-semibold text-primary">{{ totalCount }}</span> Pokémon
+        </p>
     </div>
 
     <!-- Pokemon Grid -->
-    <div class="pokemon-grid" *ngIf="!isLoading">
+    <div *ngIf="!isLoading"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-w-7xl mx-auto p-4">
         <app-pokemon-card *ngFor="let pokemon of filteredPokemon" [pokemonName]="pokemon.name"
-            (click)="onPokemonClick(pokemon.name)"></app-pokemon-card>
+            (click)="onPokemonClick(pokemon.name)"
+            class="cursor-pointer transition-transform hover:scale-105"></app-pokemon-card>
+    </div>
+
+    <!-- Sentinel (auto load trigger) -->
+    <div #loadMoreTrigger class="h-10" *ngIf="filteredPokemon.length < totalCount && !isLoading">
     </div>
 
     <!-- Loading Spinner -->
-    <div class="loading-spinner" *ngIf="isLoading">
-        <div class="spinner"></div>
+    <div *ngIf="isLoading" class="flex justify-center items-center min-h-[200px]">
+        <div class="w-10 h-10 border-4 rounded-full animate-spin" [style.border-color]="'var(--border-color)'"
+            [style.border-top-color]="'#3b82f6'">
+        </div>
     </div>
 
-    <!-- Load More Button -->
-    <button *ngIf="filteredPokemon.length < totalCount && !isLoading" class="load-more-btn" (click)="loadMore()">
-        Load More Pokémon
-    </button>
-
     <!-- No Results -->
-    <div class="no-results" *ngIf="!isLoading && filteredPokemon.length === 0">
-        <p>No Pokémon found. Try a different search term!</p>
+    <div *ngIf="!isLoading && filteredPokemon.length === 0" class="text-center py-16 px-4">
+        <div class="text-7xl mb-4 opacity-30">🔍</div>
+        <p class="text-lg mb-2 text-primary">No Pokémon found</p>
+        <p class="text-sm text-secondary">Try adjusting your search or filter</p>
     </div>
 </div>

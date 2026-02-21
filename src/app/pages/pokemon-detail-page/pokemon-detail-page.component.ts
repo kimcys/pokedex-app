@@ -18,7 +18,6 @@ export class PokemonDetailPageComponent {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private location: Location
   ) { }
 
   ngOnInit(): void {
@@ -29,10 +28,6 @@ export class PokemonDetailPageComponent {
         this.pokemonId = +params['id'];
       }
     });
-  }
-
-  goBack(): void {
-    this.location.back();
   }
 
   onPokemonChange(pokemonName: string): void {

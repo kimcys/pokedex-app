@@ -1,32 +1,33 @@
-<div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+<div class="min-h-screen bg-primary">
   <!-- Header with navigation and settings -->
-  <header class="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-card header-shadow"
+    style="border-bottom: 1px solid var(--border-color);">
     <div class="px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
       <!-- Logo -->
       <div class="cursor-pointer" routerLink="/">
-        <h1 class="text-gray-800 dark:text-white text-2xl sm:text-3xl font-bold hover:scale-105 transition-transform">
+        <h1 class="text-primary text-2xl sm:text-3xl font-bold hover:scale-105 transition-transform">
           Pokédex
         </h1>
       </div>
 
       <!-- Header Actions -->
       <div class="flex items-center gap-3">
-        <!-- Favorites button with Material badge -->
-        <button mat-icon-button class="relative !text-gray-700 dark:!text-gray-200 hover:scale-110 transition-transform"
+        <!-- Favorites button -->
+        <button mat-icon-button class="relative text-secondary hover:scale-110 transition-transform"
           [class.active]="showFavorites" (click)="toggleFavorites()" [matBadge]="(favoritesCount$ | async) ?? 0"
           matBadgeColor="warn" matBadgeSize="small" [matBadgeHidden]="((favoritesCount$ | async) ?? 0) === 0">
           <mat-icon [class.text-yellow-500]="showFavorites">star</mat-icon>
         </button>
 
-        <!-- Compare button with Material badge -->
-        <button mat-icon-button class="relative !text-gray-700 dark:!text-gray-200 hover:scale-110 transition-transform"
+        <!-- Compare button -->
+        <button mat-icon-button class="relative text-secondary hover:scale-110 transition-transform"
           (click)="toggleCompare()" [matBadge]="(compareCount$ | async) ?? 0" matBadgeColor="accent"
           matBadgeSize="small" [matBadgeHidden]="((compareCount$ | async) ?? 0) === 0">
           <mat-icon [class.text-blue-500]="showCompare">compare_arrows</mat-icon>
         </button>
 
         <!-- Settings button -->
-        <button mat-icon-button class="!text-gray-700 dark:!text-gray-200 hover:scale-110 transition-transform"
+        <button mat-icon-button class="text-secondary hover:scale-110 transition-transform"
           [class.text-purple-500]="showSettings" (click)="toggleSettings()">
           <mat-icon>settings</mat-icon>
         </button>
@@ -42,17 +43,16 @@
     <div class="absolute inset-0 bg-black/50" (click)="closeSettings()"></div>
 
     <!-- Settings Panel -->
-    <div class="absolute top-0 right-0 h-full w-full max-w-md bg-white dark:bg-gray-800 shadow-2xl 
+    <div class="absolute top-0 right-0 h-full w-full max-w-md bg-card shadow-2xl 
                 transform transition-transform duration-300 ease-in-out" [class.translate-x-0]="showSettings"
       [class.translate-x-full]="!showSettings">
 
       <!-- Header -->
-      <div
-        class="flex items-center justify-between p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-        <h2 class="text-gray-800 dark:text-white text-2xl font-semibold">Settings</h2>
-        <button mat-icon-button class="!text-gray-600 dark:!text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+      <div class="flex items-center justify-between p-6 bg-secondary border-b border-color">
+        <h2 class="text-black text-2xl font-semibold">Settings</h2>
+        <button mat-icon-button class="text-black hover:bg-gray-200"
           (click)="closeSettings()">
-          <mat-icon>close</mat-icon>
+          <mat-icon class="text-black">close</mat-icon>
         </button>
       </div>
 
@@ -64,14 +64,14 @@
   </div>
 
   <!-- Main content area -->
-  <main class="pt-24 px-4 sm:px-6 lg:px-8">
+  <main class="pt-18">
     <router-outlet></router-outlet>
   </main>
 
   <!-- Compare panel -->
   <div *ngIf="showCompare" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/50" (click)="closeCompare()"></div>
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+    <div class="relative bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
       <app-compare></app-compare>
     </div>
   </div>
@@ -79,7 +79,7 @@
   <!-- Favorites panel -->
   <div *ngIf="showFavorites" class="fixed inset-0 z-[70] flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/50" (click)="closeFavorites()"></div>
-    <div class="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
+    <div class="relative bg-card rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-auto">
       <app-favourites></app-favourites>
     </div>
   </div>

@@ -1,149 +1,179 @@
-<div class="detail-page" *ngIf="!isLoading && pokemon">
-
-    <!-- Top bar -->
-    <div class="topbar">
-        <div class="topbar-title">Pokémon List</div>
+<div class="min-h-screen bg-primary" *ngIf="!isLoading && pokemon">
+    <div class="h-14 flex items-center justify-center border-b" [style.background-color]="'var(--bg-card)'"
+        [style.border-color]="'var(--border-color)'">
+        <div class="font-semibold tracking-wide text-primary">
+            Pokémon Details
+        </div>
     </div>
-
-    <div class="content-grid">
-
-        <aside class="left">
-            <div class="summary-card">
-                <div class="summary-head">
-                    <div class="summary-name">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
+        <aside class="lg:sticky lg:top-24 self-start">
+            <div class="bg-card border border-color rounded-2xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="text-2xl font-bold text-primary">
                         {{ pokemon.name | titlecase }}
                     </div>
-                    <div class="summary-id">
+                    <div class="text-sm bg-secondary text-secondary rounded-lg px-3 py-1.5 font-semibold">
                         #{{ pokemon.id.toString().padStart(4, '0') }}
                     </div>
                 </div>
-
-                <!-- Pokemon Image -->
-                <div class="summary-image">
-                    <img class="poke-img" [src]="getPokemonImage()" [alt]="pokemon.name" />
+                <div class="flex justify-center py-4">
+                    <img class="w-36 h-36 object-contain image-rendering-pixelated" [src]="getPokemonImage()"
+                        [alt]="pokemon.name" />
                 </div>
-
-                <!-- Types -->
-                <div class="summary-types">
-                    <span class="type-pill" *ngFor="let t of pokemon.types"
-                        [style.background]="getTypeColor(t.type.name)">
+                <div class="flex gap-2 justify-center py-2 mb-2">
+                    <span class="type-pill px-4 py-2 rounded-lg text-white font-bold text-sm"
+                        *ngFor="let t of pokemon.types" [style.background-color]="getTypeColor(t.type.name)">
                         {{ t.type.name | titlecase }}
                     </span>
                 </div>
-
-                <!-- Abilities -->
-                <div class="summary-abilities">
-                    <div class="ability-chip" *ngFor="let ability of pokemon.abilities; let i = index">
-                        <span class="ability-name">
-                            {{ ability.ability.name | titlecase }}
-                        </span>
-                        <span class="ha" *ngIf="isHiddenAbility(i)">
-                            Hidden Ability
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Mini Stats -->
-                <div class="summary-stats">
-                    <div class="stat-tile" *ngFor="let s of pokemon.stats">
-                        <div class="stat-label">
+                <div class="grid grid-cols-3 gap-3 pt-2">
+                    <div class="rounded-xl p-3 text-center transition-all duration-200 hover:scale-105"
+                        *ngFor="let s of pokemon.stats" [style.background]="getStatStyles(s.stat.name).bg"
+                        [style.border]="'1px solid ' + getStatStyles(s.stat.name).border">
+                        <div class="text-xs font-bold mb-1" [style.color]="getStatStyles(s.stat.name).text">
                             {{ formatStatName(s.stat.name) }}
                         </div>
-                        <div class="stat-value">
+
+                        <div class="text-lg font-extrabold" [style.color]="getStatStyles(s.stat.name).text">
                             {{ s.base_stat }}
                         </div>
                     </div>
                 </div>
-
             </div>
         </aside>
 
-        <!-- ================= RIGHT: DETAILS ================= -->
-        <main class="right">
-
-            <!-- ===== Evolution Chain ===== -->
-            <section class="panel">
-                <h2 class="panel-title">Evolution Chain</h2>
-
-                <div class="evo-row" *ngIf="evolutionChain.length > 0; else noEvo">
+        <main class="space-y-3">
+            <section class="bg-card border border-color rounded-2xl p-6">
+                <h2 class="text-2xl font-extrabold text-primary mb-4 underline underline-offset-4">
+                    Evolution Chain
+                </h2>
+                <div class="flex items-center gap-4 flex-wrap" *ngIf="evolutionChain.length > 0; else noEvo">
                     <ng-container *ngFor="let evo of evolutionChain; let i = index">
-                        <button class="evo-name" type="button" (click)="onEvolutionClick(evo.name)">
+                        <button type="button" (click)="onEvolutionClick(evo.name)" class="px-4 py-2 rounded-xl font-semibold capitalize
+                               transition-all duration-200
+                               shadow-sm hover:shadow-md
+                               active:scale-95
+                               border" [style.background]="evo.name === pokemon.name 
+                            ? 'var(--text-primary)' 
+                            : 'var(--bg-card)'" [style.color]="evo.name === pokemon.name 
+                            ? 'gray' 
+                            : 'var(--text-primary)'" [style.border-color]="'var(--border-color)'">
                             {{ evo.name | titlecase }}
                         </button>
-
-                        <span class="evo-arrow" *ngIf="i < evolutionChain.length - 1">
+                        <span class="text-2xl text-secondary" *ngIf="i < evolutionChain.length - 1">
                             →
                         </span>
                     </ng-container>
                 </div>
-
                 <ng-template #noEvo>
-                    <div class="muted">
+                    <div class="text-secondary">
                         This Pokémon does not evolve.
                     </div>
                 </ng-template>
             </section>
 
-            <!-- ===== Abilities ===== -->
-            <section class="panel">
-                <h2 class="panel-title">Abilities</h2>
-
-                <div class="ability-block" *ngFor="let ability of pokemon.abilities; let i = index">
-                    <div class="ability-title">
-                        {{ ability.ability.name | titlecase }}
-                        <span class="ha-badge" *ngIf="isHiddenAbility(i)">
-                            HA
-                        </span>
-                    </div>
-
-                    <div class="ability-desc">
-                        {{ getAbilityDescription(ability.ability.name) }}
+            <section class="bg-card border border-color rounded-2xl p-6">
+                <h2 class="text-2xl font-extrabold text-primary mb-4 underline underline-offset-4">
+                    Abilities
+                </h2>
+                <div class="flex flex-col gap-4">
+                    <div *ngFor="let ability of pokemon.abilities; let i = index">
+                        <div class="flex items-center">
+                            <span class="text-xl font-extrabold text-primary capitalize">
+                                {{ ability.ability.name | titlecase }}
+                            </span>
+                        </div>
+                        <p class="text-secondary leading-relaxed">
+                            {{ getAbilityDescription(ability.ability.name) }}
+                        </p>
                     </div>
                 </div>
             </section>
 
-            <section class="panel">
-                <h2 class="panel-title">Type Efficiency</h2>
-
-                <div class="type-eff-cols">
-                    <div class="type-eff-col" *ngFor="let t of pokemon.types">
-                        <div class="type-eff-head" [style.background]="getTypeColor(t.type.name)">
+            <section class="bg-card border border-color rounded-2xl p-6">
+                <h2 class="text-2xl font-extrabold text-primary mb-4 underline underline-offset-4">
+                    Type Efficiency
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div *ngFor="let t of pokemon.types">
+                        <div class="text-2xl font-extrabold mb-3 text-primary">
                             {{ t.type.name | titlecase }}
                         </div>
-
-                        <div class="type-eff-list" *ngIf="typeEfficiencies.length > 0; else noTypeData">
-                            <div class="eff-row" *ngFor="let eff of typeEfficiencies">
-                                <div class="eff-label">
-                                    {{ eff.effect }}
+                        <ng-container *ngIf="typeEfficiencyByType[t.type.name] as rel; else noTypeData">
+                            <div class="space-y-4">
+                                <div *ngIf="rel.doubleFrom.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">Double Damage From</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.doubleFrom"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                <div class="eff-pill">
-                                    <span class="pill" [style.background]="getTypeColor(eff.type)">
-                                        {{ eff.type | titlecase }}
-                                    </span>
-                                    <span class="mult">
-                                        {{ eff.multiplier }}x
-                                    </span>
+                                <div *ngIf="rel.doubleTo.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">Double Damage To</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.doubleTo"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div *ngIf="rel.halfFrom.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">Half Damage From</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.halfFrom"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div *ngIf="rel.halfTo.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">Half Damage To</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.halfTo"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div *ngIf="rel.noTo.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">No Damage To</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.noTo"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div *ngIf="rel.noFrom.length">
+                                    <div class="text-sm font-semibold text-primary mb-2">No Damage From</div>
+                                    <div class="flex flex-wrap gap-3">
+                                        <span *ngFor="let x of rel.noFrom"
+                                            class="text-white text-xs font-extrabold rounded-lg px-4 py-2"
+                                            [style.background-color]="getTypeColor(x)">
+                                            {{ x | titlecase }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
+                        </ng-container>
                         <ng-template #noTypeData>
-                            <div class="muted">
-                                No type data yet.
-                            </div>
+                            <div class="text-secondary">No type data yet.</div>
                         </ng-template>
-
                     </div>
                 </div>
             </section>
-
         </main>
-
     </div>
 </div>
-
-<!-- Loading -->
-<div class="loading-spinner" *ngIf="isLoading">
-    <div class="spinner"></div>
+<div class="flex justify-center items-center min-h-screen bg-primary" *ngIf="isLoading">
+    <div class="w-12 h-12 border-4 rounded-full animate-spin" [style.border-color]="'var(--border-color)'"
+        [style.border-top-color]="'#3b82f6'">
+    </div>
 </div>
