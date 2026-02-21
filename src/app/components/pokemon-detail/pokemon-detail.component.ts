@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { forkJoin, map, switchMap } from 'rxjs';
 import { EvolutionChain, Pokemon } from '../../models/pokemon.model';
 import { PokemonService } from '../../services/pokemon.service';
 import { SoundService } from '../../services/sound.service';
 import { MatIconModule } from '@angular/material/icon';
+import { Router } from '@angular/router';
 
 type TypeEfficiencyRow = { type: string; multiplier: number; effect: string };
 type TypeRelationsUI = {
@@ -17,7 +18,6 @@ type TypeRelationsUI = {
 };
 type TypeEfficiencyByType = Record<string, TypeRelationsUI>;
 
-
 @Component({
   selector: 'app-pokemon-detail',
   standalone: true,
@@ -25,7 +25,7 @@ type TypeEfficiencyByType = Record<string, TypeRelationsUI>;
   templateUrl: './pokemon-detail.component.html',
   styleUrls: ['./pokemon-detail.component.scss']
 })
-export class PokemonDetailComponent {
+export class PokemonDetailComponent implements OnInit, OnChanges, OnDestroy {
   @Input() pokemonName!: string;
   @Input() pokemonId!: number;
   @Output() pokemonChange = new EventEmitter<string>();
@@ -36,10 +36,15 @@ export class PokemonDetailComponent {
   typeEfficiencyByType: TypeEfficiencyByType = {};
   abilityDescMap: Record<string, string> = {};
   typeEfficiencies: TypeEfficiencyRow[] = [];
+  displayedStats: Record<string, number> = {};
+  _rafHandles: number[] = [];
+  private statAnimDuration = 700;
+  private easeOutCubic(t: number) { return 1 - Math.pow(1 - t, 3); }
 
   constructor(
     private pokemonService: PokemonService,
-    private soundService: SoundService
+    private soundService: SoundService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -50,6 +55,10 @@ export class PokemonDetailComponent {
     if (changes['pokemonName'] || changes['pokemonId']) {
       this.loadPokemonDetails();
     }
+  }
+  ngOnDestroy(): void {
+    this._rafHandles.forEach(id => cancelAnimationFrame(id));
+    this._rafHandles = [];
   }
 
   loadPokemonDetails(): void {
@@ -67,6 +76,7 @@ export class PokemonDetailComponent {
     request$.subscribe({
       next: (data) => {
         this.pokemon = data;
+        this.animateAllStats();
         this.loadEvolutionChain();
         this.loadAbilityDescriptions();
         this.calculateTypeEfficienciesFromApi();
@@ -187,6 +197,48 @@ export class PokemonDetailComponent {
       || '';
   }
 
+  private animateStat(statName: string, target: number): void {
+    const start = performance.now();
+    const duration = this.statAnimDuration;
+    const initial = 0;
+    const frame = (now: number) => {
+      const elapsed = Math.max(0, now - start);
+      const t = Math.min(1, elapsed / duration);
+      const eased = this.easeOutCubic(t);
+      const value = Math.round(initial + (target - initial) * eased);
+
+      this.displayedStats[statName] = value;
+
+      if (t < 1) {
+        const id = requestAnimationFrame(frame);
+        this._rafHandles.push(id);
+      } else {
+        this.displayedStats[statName] = target;
+      }
+    };
+
+    const id = requestAnimationFrame(frame);
+    this._rafHandles.push(id);
+  }
+
+  private animateAllStats(): void {
+    this._rafHandles.forEach(id => cancelAnimationFrame(id));
+    this._rafHandles = [];
+    this.displayedStats = {};
+    if (!this.pokemon?.stats?.length) return;
+    this.pokemon.stats.forEach((s: any, index: number) => {
+      const delay = index * 60;
+      if (delay === 0) {
+        this.animateStat(s.stat.name, s.base_stat);
+      } else {
+        const timer = setTimeout(() => {
+          this.animateStat(s.stat.name, s.base_stat);
+          clearTimeout(timer);
+        }, delay);
+      }
+    });
+  }
+
   getTypeColor(type: string): string {
     const colors: { [key: string]: string } = {
       normal: '#A8A878',
@@ -261,5 +313,10 @@ export class PokemonDetailComponent {
   isHiddenAbility(index: number): boolean {
     if (!this.pokemon?.abilities?.length) return false;
     return index === this.pokemon.abilities.length - 1;
+  }
+
+  goBack(): void {
+    this.soundService.play('bulbausar');
+    this.router.navigate(['home']);
   }
 }

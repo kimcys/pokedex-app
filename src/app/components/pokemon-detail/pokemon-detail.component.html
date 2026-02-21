@@ -1,9 +1,27 @@
 <div class="min-h-screen bg-primary" *ngIf="!isLoading && pokemon">
-    <div class="h-14 flex items-center justify-center border-b" [style.background-color]="'var(--bg-card)'"
+    <div class="h-14 flex items-center justify-between px-4 border-b" [style.background-color]="'var(--bg-card)'"
         [style.border-color]="'var(--border-color)'">
-        <div class="font-semibold tracking-wide text-primary">
+        <button class="flex items-center gap-2 pl-2 pr-4 py-1.5
+        cursor-pointer
+        bg-primary
+        text-white font-medium
+        rounded-lg shadow-md hover:shadow-xl
+        transform hover:-translate-y-0.5 active:translate-y-0
+        transition-all duration-300
+        group relative overflow-hidden" (click)="goBack()">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent 
+         translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000">
+            </div>
+            <mat-icon class="text-xl transition-transform duration-300 group-hover:-translate-x-1 cursor-pointer">
+                arrow_back
+            </mat-icon>
+
+            <span class="font-medium">Back</span>
+        </button>
+        <div class="font-semibold tracking-wide text-primary absolute left-1/2 -translate-x-1/2">
             Pokémon Details
         </div>
+        <div class="w-16"></div>
     </div>
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-4">
         <aside class="lg:sticky lg:top-24 self-start">
@@ -33,9 +51,8 @@
                         <div class="text-xs font-bold mb-1" [style.color]="getStatStyles(s.stat.name).text">
                             {{ formatStatName(s.stat.name) }}
                         </div>
-
                         <div class="text-lg font-extrabold" [style.color]="getStatStyles(s.stat.name).text">
-                            {{ s.base_stat }}
+                            {{ displayedStats[s.stat.name] }}
                         </div>
                     </div>
                 </div>

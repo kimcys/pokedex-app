@@ -10,7 +10,7 @@ export class SoundService {
 
   constructor() {
     this.loadSound('favorite', '/sound/meow.mp3');
-    this.loadSound('evolution', '/sound/bulbausar.mp3');
+    this.loadSound('bulbausar', '/sound/bulbausar.mp3');
     this.loadSound('open', '/sound/who-pokemon.mp3');
   }
 
