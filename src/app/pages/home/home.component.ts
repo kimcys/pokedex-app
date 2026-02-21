@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { Router } from '@angular/router';
@@ -19,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit, OnDestroy {
+export class HomeComponent implements OnInit, OnDestroy, AfterViewChecked{
   pokemonList: PokemonListItem[] = [];
   filteredPokemon: PokemonListItem[] = [];
   types: string[] = [];
@@ -36,12 +36,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLElement>;
   private io?: IntersectionObserver;
   private isLoadingMore = false;
+  private shouldReattachObserver = false;
 
   constructor(
     private pokemonService: PokemonService,
     private router: Router,
     private soundService: SoundService
   ) { }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldReattachObserver && this.loadMoreTrigger?.nativeElement) {
+      this.setupInfiniteScroll();
+      this.shouldReattachObserver = false;
+    }
+  }
 
   ngOnInit(): void {
     this.loadPokemon();
@@ -125,29 +133,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   filterPokemon(): void {
     let filtered = [...this.pokemonList];
-
-    // Apply search filter
     if (this.searchTerm) {
       filtered = filtered.filter(p =>
         p.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
     }
-
-    // Apply type filter
     if (this.selectedType) {
       this.isLoading = true;
       this.pokemonService.getPokemonByType(this.selectedType).subscribe({
         next: (pokemonOfType) => {
           const typePokemonNames = pokemonOfType.map(p => p.pokemon.name);
-          filtered = filtered.filter(p => typePokemonNames.includes(p.name));
-          this.totalCount = filtered.length;
-
-          // Apply pagination
+          const typed = filtered.filter(p => typePokemonNames.includes(p.name));
+          this.totalCount = typed.length;
           const start = this.currentPage * this.itemsPerPage;
           const end = start + this.itemsPerPage;
-          this.filteredPokemon = filtered.slice(start, end);
+          this.filteredPokemon = typed.slice(start, end);
           this.isLoading = false;
-          this.setupInfiniteScroll();
+          this.reattachInfiniteScroll();
         },
         error: (error) => {
           console.error('Error filtering by type:', error);
@@ -156,11 +158,10 @@ export class HomeComponent implements OnInit, OnDestroy {
       });
     } else {
       this.totalCount = filtered.length;
-
-      // Apply pagination
       const start = this.currentPage * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       this.filteredPokemon = filtered.slice(start, end);
+      this.reattachInfiniteScroll();
     }
   }
 
@@ -221,6 +222,10 @@ export class HomeComponent implements OnInit, OnDestroy {
     );
 
     this.io.observe(this.loadMoreTrigger.nativeElement);
+  }
+
+  private reattachInfiniteScroll(): void {
+    this.shouldReattachObserver = true;
   }
 
   getTypeColor(type: string): string {
