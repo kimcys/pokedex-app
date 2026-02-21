@@ -25,6 +25,12 @@ export interface Pokemon {
             'official-artwork': {
                 front_default: string;
             };
+            showdown?: {
+                front_default: string | null;
+                front_shiny?: string | null;
+                back_default?: string | null;
+                back_shiny?: string | null;
+            };
         };
     };
     types: {

@@ -1,110 +1,149 @@
-<div class="pokemon-detail" *ngIf="!isLoading && pokemon">
-    <!-- Header with Pokemon info -->
-    <div class="detail-header" [style.background]="getTypeColor(pokemon.types[0].type.name)">
-        <div class="header-content">
-            <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
-            <h1 class="pokemon-name">{{ pokemon.name | titlecase }}</h1>
-            <div class="types">
-                <span *ngFor="let type of pokemon.types" class="type-badge"
-                    [style.background]="getTypeColor(type.type.name)">
-                    {{ type.type.name | titlecase }}
-                </span>
-            </div>
-        </div>
+<div class="detail-page" *ngIf="!isLoading && pokemon">
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="topbar-title">Pokémon List</div>
     </div>
 
-    <!-- Pokemon Image -->
-    <div class="pokemon-image-container">
-        <img [src]="pokemon.sprites.other['official-artwork'].front_default" [alt]="pokemon.name" class="pokemon-image">
-    </div>
+    <div class="content-grid">
 
-    <!-- Tab Navigation -->
-    <div class="tab-navigation">
-        <button class="tab-btn" [class.active]="activeTab === 'about'" (click)="changeTab('about')">
-            About
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'stats'" (click)="changeTab('stats')">
-            Base Stats
-        </button>
-        <button class="tab-btn" [class.active]="activeTab === 'evolution'" (click)="changeTab('evolution')">
-            Evolution
-        </button>
-    </div>
-
-    <!-- Tab Content -->
-    <div class="tab-content">
-        <!-- About Tab -->
-        <div class="about-tab" *ngIf="activeTab === 'about'">
-            <div class="info-grid">
-                <div class="info-item">
-                    <span class="info-label">Height</span>
-                    <span class="info-value">{{ pokemon.height / 10 }} m</span>
+        <aside class="left">
+            <div class="summary-card">
+                <div class="summary-head">
+                    <div class="summary-name">
+                        {{ pokemon.name | titlecase }}
+                    </div>
+                    <div class="summary-id">
+                        #{{ pokemon.id.toString().padStart(4, '0') }}
+                    </div>
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Weight</span>
-                    <span class="info-value">{{ pokemon.weight / 10 }} kg</span>
+
+                <!-- Pokemon Image -->
+                <div class="summary-image">
+                    <img class="poke-img" [src]="getPokemonImage()" [alt]="pokemon.name" />
                 </div>
-                <div class="info-item">
-                    <span class="info-label">Abilities</span>
-                    <span class="info-value">
-                        <span *ngFor="let ability of pokemon.abilities; let last = last">
-                            {{ ability.ability.name | titlecase }}{{ !last ? ', ' : '' }}
-                        </span>
+
+                <!-- Types -->
+                <div class="summary-types">
+                    <span class="type-pill" *ngFor="let t of pokemon.types"
+                        [style.background]="getTypeColor(t.type.name)">
+                        {{ t.type.name | titlecase }}
                     </span>
                 </div>
-            </div>
 
-            <!-- Description (would need separate API call for flavor text) -->
-            <div class="description">
-                <h3>Description</h3>
-                <p>{{ pokemon.name | titlecase }} is a {{ pokemon.types[0].type.name }} type Pokémon.</p>
-            </div>
-        </div>
+                <!-- Abilities -->
+                <div class="summary-abilities">
+                    <div class="ability-chip" *ngFor="let ability of pokemon.abilities; let i = index">
+                        <span class="ability-name">
+                            {{ ability.ability.name | titlecase }}
+                        </span>
+                        <span class="ha" *ngIf="isHiddenAbility(i)">
+                            Hidden Ability
+                        </span>
+                    </div>
+                </div>
 
-        <!-- Stats Tab -->
-        <div class="stats-tab" *ngIf="activeTab === 'stats'">
-            <div class="stats-list">
-                <div class="stat-item" *ngFor="let stat of pokemon.stats">
-                    <div class="stat-label">{{ formatStatName(stat.stat.name) }}</div>
-                    <div class="stat-bar-container">
-                        <div class="stat-bar" [style.width]="getStatWidth(stat.base_stat)"
-                            [style.background]="getTypeColor(pokemon.types[0].type.name)">
-                            {{ stat.base_stat }}
+                <!-- Mini Stats -->
+                <div class="summary-stats">
+                    <div class="stat-tile" *ngFor="let s of pokemon.stats">
+                        <div class="stat-label">
+                            {{ formatStatName(s.stat.name) }}
+                        </div>
+                        <div class="stat-value">
+                            {{ s.base_stat }}
                         </div>
                     </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-label">Total</div>
-                    <div class="stat-value">{{ getTotalStats() }}</div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Evolution Tab -->
-        <div class="evolution-tab" *ngIf="activeTab === 'evolution'">
-            <div class="evolution-chain" *ngIf="evolutionChain && evolutionChain.length > 0">
-                <div class="evolution-item" *ngFor="let evo of evolutionChain; let i = index">
-                    <div class="evolution-pokemon">
-                        <img [src]="'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + getPokemonIdFromUrl(evo.url) + '.png'"
-                            [alt]="evo.name" (click)="onEvolutionClick(evo.name)">
-                        <span class="evolution-name">{{ evo.name | titlecase }}</span>
-                        <span class="evolution-condition" *ngIf="evo.minLevel">
-                            Level {{ evo.minLevel }}
+            </div>
+        </aside>
+
+        <!-- ================= RIGHT: DETAILS ================= -->
+        <main class="right">
+
+            <!-- ===== Evolution Chain ===== -->
+            <section class="panel">
+                <h2 class="panel-title">Evolution Chain</h2>
+
+                <div class="evo-row" *ngIf="evolutionChain.length > 0; else noEvo">
+                    <ng-container *ngFor="let evo of evolutionChain; let i = index">
+                        <button class="evo-name" type="button" (click)="onEvolutionClick(evo.name)">
+                            {{ evo.name | titlecase }}
+                        </button>
+
+                        <span class="evo-arrow" *ngIf="i < evolutionChain.length - 1">
+                            →
                         </span>
-                        <span class="evolution-condition" *ngIf="evo.item">
-                            Use {{ evo.item | titlecase }}
+                    </ng-container>
+                </div>
+
+                <ng-template #noEvo>
+                    <div class="muted">
+                        This Pokémon does not evolve.
+                    </div>
+                </ng-template>
+            </section>
+
+            <!-- ===== Abilities ===== -->
+            <section class="panel">
+                <h2 class="panel-title">Abilities</h2>
+
+                <div class="ability-block" *ngFor="let ability of pokemon.abilities; let i = index">
+                    <div class="ability-title">
+                        {{ ability.ability.name | titlecase }}
+                        <span class="ha-badge" *ngIf="isHiddenAbility(i)">
+                            HA
                         </span>
                     </div>
-                    <div class="evolution-arrow" *ngIf="i < evolutionChain.length - 1">→</div>
+
+                    <div class="ability-desc">
+                        {{ getAbilityDescription(ability.ability.name) }}
+                    </div>
                 </div>
-            </div>
-            <div class="no-evolution" *ngIf="!evolutionChain || evolutionChain.length <= 1">
-                <p>This Pokémon does not evolve.</p>
-            </div>
-        </div>
+            </section>
+
+            <section class="panel">
+                <h2 class="panel-title">Type Efficiency</h2>
+
+                <div class="type-eff-cols">
+                    <div class="type-eff-col" *ngFor="let t of pokemon.types">
+                        <div class="type-eff-head" [style.background]="getTypeColor(t.type.name)">
+                            {{ t.type.name | titlecase }}
+                        </div>
+
+                        <div class="type-eff-list" *ngIf="typeEfficiencies.length > 0; else noTypeData">
+                            <div class="eff-row" *ngFor="let eff of typeEfficiencies">
+                                <div class="eff-label">
+                                    {{ eff.effect }}
+                                </div>
+
+                                <div class="eff-pill">
+                                    <span class="pill" [style.background]="getTypeColor(eff.type)">
+                                        {{ eff.type | titlecase }}
+                                    </span>
+                                    <span class="mult">
+                                        {{ eff.multiplier }}x
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <ng-template #noTypeData>
+                            <div class="muted">
+                                No type data yet.
+                            </div>
+                        </ng-template>
+
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
     </div>
 </div>
 
+<!-- Loading -->
 <div class="loading-spinner" *ngIf="isLoading">
     <div class="spinner"></div>
 </div>

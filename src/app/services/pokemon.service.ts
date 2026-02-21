@@ -105,4 +105,13 @@ export class PokemonService {
       )
     );
   }
+
+  getAbilityDetails(name: string) {
+    return this.http.get<any>(`${this.apiUrl}/ability/${name}`);
+  }
+  
+  getTypeDetails(typeName: string) {
+    return this.http.get<any>(`${this.apiUrl}/type/${typeName}`);
+  }
+  
 }

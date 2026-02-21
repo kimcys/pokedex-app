@@ -107,6 +107,12 @@ export class PokemonCardComponent implements OnInit {
     this.router.navigate(['/pokemon', this.pokemonName]);
   }
 
+  getPokemonImage(): string {
+    return this.pokemon?.sprites?.other?.showdown?.front_default
+      || this.pokemon?.sprites?.other?.['official-artwork']?.front_default
+      || '';
+  }
+
   getTypeClass(type: string): string {
     return `type-${type.toLowerCase()}`;
   }
