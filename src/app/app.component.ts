@@ -41,7 +41,6 @@ export class AppComponent {
   constructor(
     private favoritesService: FavoritesService,
     private compareService: CompareService,
-    private soundService: SoundService 
   ) {
     this.favoritesCount$ = this.favoritesService.favorites$.pipe(
       map(favorites => favorites.length)

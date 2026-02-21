@@ -1,0 +1,107 @@
+/* Animation keyframes */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Animation classes */
+.animate-slideUp {
+    animation: slideUp 0.4s ease-out forwards;
+}
+
+.animate-slideIn {
+    opacity: 0;
+    animation: slideIn 0.3s ease-out forwards;
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Stat bar animations - IMPORTANT: Remove the .animated class selector */
+.stat-bar,
+.summary-bar {
+    transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* When animation is not triggered, force width 0 */
+.animation-not-triggered .stat-bar,
+.animation-not-triggered .summary-bar {
+    width: 0% !important;
+}
+
+/* Stagger animations */
+.animate-slideIn:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.animate-slideIn:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.animate-slideIn:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.animate-slideIn:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+/* Subtle bounce */
+@keyframes bounceSubtle {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.animate-bounce-subtle {
+    animation: bounceSubtle 2s ease-in-out infinite;
+}
+
+/* Slow pulse */
+@keyframes pulseSlow {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulseSlow 2s ease-in-out infinite;
+}
+
+/* Custom easing for smooth animations */
+.transition-all {
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}

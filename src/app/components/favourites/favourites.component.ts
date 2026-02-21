@@ -12,8 +12,7 @@ import { SoundService } from '../../services/sound.service';
 })
 export class FavouritesComponent {
 
-  @Output() closePanel = new EventEmitter<void>();
-
+  @Output() closed = new EventEmitter<void>();
   favorites: FavoritePokemon[] = [];
   showPanel = true;
 
@@ -56,7 +55,7 @@ export class FavouritesComponent {
   viewPokemon(name: string): void {
     this.soundService.play('open');
     this.router.navigate(['/pokemon', name]);
-    this.closePanel.emit();
+    this.closed.emit();
   }
 
   removeFavorite(id: number, event: Event): void {
@@ -64,7 +63,6 @@ export class FavouritesComponent {
     this.favoritesService.removeFavorite(id);
   }
   
-
   clearAll(): void {
     if (confirm('Remove all favorites?')) {
       this.favorites.forEach(fav => this.favoritesService.removeFavorite(fav.id));
@@ -73,7 +71,7 @@ export class FavouritesComponent {
 
   closeFavorites(): void {
     this.showPanel = false;
-    this.closePanel.emit();
+    this.closed.emit();
   }
 
   getGridClass(): string {
