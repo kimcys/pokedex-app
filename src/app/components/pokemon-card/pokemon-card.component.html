@@ -1,28 +1,75 @@
-<div class="pokemon-card" *ngIf="!isLoading && pokemon">
-    <!-- Compare Button (Left side) -->
-    <button class="action-btn compare-btn" [class.active]="isInCompare" (click)="toggleCompare($event)"
-        [disabled]="!canAddToCompare">
+<div class="bg-card border border-color rounded-xl p-4 text-center shadow-md hover:shadow-xl relative 
+            transition-all duration-300 hover:-translate-y-1" *ngIf="!isLoading && pokemon"
+    [style.background-color]="'var(--bg-card)'" [style.border-color]="'var(--border-color)'">
+    <button class="absolute top-2 left-2 w-9 h-9 rounded-full bg-card border-2 flex items-center justify-center 
+                   text-lg transition-all duration-200 hover:scale-110 z-10 shadow-md
+                   disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100
+                   group" [class.active]="isInCompare" [class.bg-green-500]="isInCompare"
+        [class.text-white]="isInCompare" [class.border-green-500]="isInCompare" [class.text-green-500]="!isInCompare"
+        [class.border-green-500]="!isInCompare" [disabled]="!canAddToCompare" (click)="toggleCompare($event)"
+        [style.background-color]="isInCompare ? '#10b981' : 'var(--bg-card)'"
+        [style.border-color]="isInCompare ? '#10b981' : '#10b981'" [style.color]="isInCompare ? 'white' : '#10b981'">
         <span class="icon">🔄</span>
-        <span class="tooltip">{{ isInCompare ? 'Remove from compare' : 'Add to compare' }}</span>
+        <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs 
+                     px-2 py-1 rounded whitespace-nowrap hidden group-hover:block
+                     after:content-[''] after:absolute after:top-full after:left-1/2 
+                     after:-ml-1 after:border-4 after:border-solid 
+                     after:border-transparent after:border-t-gray-800">
+            {{ isInCompare ? 'Remove from compare' : 'Add to compare' }}
+        </span>
     </button>
-
-    <button class="action-btn favorite-btn" [class.active]="isFavorite" (click)="toggleFavorite($event)">
+    <button class="absolute top-2 right-2 w-9 h-9 rounded-full bg-card border-2 flex items-center justify-center 
+                   text-lg transition-all duration-200 hover:scale-110 z-10 shadow-md group"
+        [class.active]="isFavorite" [class.bg-yellow-400]="isFavorite" [class.text-white]="isFavorite"
+        [class.border-yellow-400]="isFavorite" [class.text-yellow-400]="!isFavorite"
+        [class.border-yellow-400]="!isFavorite" (click)="toggleFavorite($event)"
+        [style.background-color]="isFavorite ? '#fbbf24' : 'var(--bg-card)'"
+        [style.border-color]="isFavorite ? '#fbbf24' : '#fbbf24'" [style.color]="isFavorite ? 'white' : '#fbbf24'">
         <span class="icon">{{ isFavorite ? '★' : '☆' }}</span>
-        <span class="tooltip">{{ isFavorite ? 'Remove from favorites' : 'Add to favorites' }}</span>
+        <span class="absolute -top-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs 
+                     px-2 py-1 rounded whitespace-nowrap hidden group-hover:block
+                     after:content-[''] after:absolute after:top-full after:left-1/2 
+                     after:-ml-1 after:border-4 after:border-solid 
+                     after:border-transparent after:border-t-gray-800">
+            {{ isFavorite ? 'Remove from favorites' : 'Add to favorites' }}
+        </span>
     </button>
 
-    <div class="card-content" (click)="viewDetails()">
-        <div class="pokemon-id">#{{ pokemon.id.toString().padStart(3, '0') }}</div>
-        <img [src]="getPokemonImage()" [alt]="pokemon.name">
-        <h3>{{ pokemon.name | titlecase }}</h3>
-        <div class="types">
-            <span *ngFor="let type of pokemon.types" [class]="'type-badge ' + getTypeClass(type.type.name)">
+    <div class="cursor-pointer" (click)="viewDetails()">
+        <div class="mb-2">
+            <span class="text-secondary text-xs text-secondary bg-secondary rounded-lg px-2 py-1.5 font-semibold"> 
+                #{{pokemon.id.toString().padStart(3, '0') }}</span>
+        </div>
+        <img [src]="getPokemonImage()" [alt]="pokemon.name"
+            class="w-16 h-16 mx-auto object-contain transition-transform duration-300 hover:scale-105">
+        <h3 class="text-primary font-semibold text-base my-2 capitalize">
+            {{ pokemon.name }}
+        </h3>
+        <div class="flex gap-1 justify-center mb-3">
+            <span *ngFor="let type of pokemon.types"
+                class="type-badge px-3 py-1 rounded-md text-white text-xs font-medium shadow-sm"
+                [class]="'type-' + type.type.name.toLowerCase()">
                 {{ type.type.name | titlecase }}
             </span>
         </div>
+        <div class="grid grid-cols-3 gap-2 pt-1">
+            <div *ngFor="let s of pokemon.stats"
+                class="rounded-lg p-2 text-center transition-all duration-200 hover:scale-105"
+                [style.background-color]="getStatStyles(s.stat.name).bg + '20'"
+                [style.border]="'1px solid ' + getStatStyles(s.stat.name).border">
+                <div class="text-[10px] font-bold mb-0.5 uppercase tracking-wide"
+                    [style.color]="getStatStyles(s.stat.name).text">
+                    {{ formatStatName(s.stat.name) }}
+                </div>
+                <div class="text-sm font-extrabold" [style.color]="getStatStyles(s.stat.name).text">
+                    {{ s.base_stat }}
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-
-<div class="loading-spinner" *ngIf="isLoading">
-    <div class="spinner"></div>
+<div class="flex justify-center items-center min-h-[200px]" *ngIf="isLoading">
+    <div class="w-10 h-10 border-4 rounded-full animate-spin" [style.border-color]="'var(--border-color)'"
+        [style.border-top-color]="'#3b82f6'">
+    </div>
 </div>
